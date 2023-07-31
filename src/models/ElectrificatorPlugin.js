@@ -1,6 +1,6 @@
 import {
   DefaultPlugin,
-  DefaultData,
+  DefaultData, DefaultConfiguration,
 } from 'leto-modelizer-plugin-core';
 import ElectrificatorDrawer from 'src/draw/ElectrificatorDrawer';
 import ElectrificatorMetadata from 'src/metadata/ElectrificatorMetadata';
@@ -16,13 +16,18 @@ class ElectrificatorPlugin extends DefaultPlugin {
    * Default constructor.
    */
   constructor() {
-    const pluginData = new DefaultData({
+    const pluginConfiguration = new DefaultConfiguration({
+      defaultFileName: 'datacenter.json',
+    });
+
+    const pluginData = new DefaultData(pluginConfiguration, {
       name,
       version,
     });
 
     super({
       pluginData,
+      configuration: pluginConfiguration,
       pluginDrawer: new ElectrificatorDrawer(pluginData),
       pluginMetadata: new ElectrificatorMetadata(pluginData),
       pluginParser: new ElectrificatorParser(pluginData),
