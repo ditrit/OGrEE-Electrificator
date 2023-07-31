@@ -2,8 +2,8 @@
   "name": "electrificator",
   "version": "0.1.0",
   "description": "Template for plugin creation",
-  "main": "dist/my-plugin.js",
-  "exports": "./dist/my-plugin.js",
+  "main": "dist/electrificatorPlugin.js",
+  "exports": "./dist/electrificatorPlugin.js",
   "scripts": {
     "build": "webpack",
     "build:docs": "jsdoc --readme README.md --package package.json -r ./src/ -c jsdoc.config.json -d docs",
