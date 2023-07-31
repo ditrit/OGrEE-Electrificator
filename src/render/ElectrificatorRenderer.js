@@ -3,7 +3,7 @@ import { DefaultRender } from 'leto-modelizer-plugin-core';
 /**
  * Template of plugin renderer.
  */
-class MyPluginRenderer extends DefaultRender {
+class ElectrificatorRenderer extends DefaultRender {
   renderFiles() {
     /*
      * The purpose of this function is to generate all files.
@@ -18,4 +18,4 @@ class MyPluginRenderer extends DefaultRender {
   }
 }
 
-export default MyPluginRenderer;
+export default ElectrificatorRenderer;

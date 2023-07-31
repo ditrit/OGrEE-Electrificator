@@ -3,7 +3,7 @@ import { DefaultParser } from 'leto-modelizer-plugin-core';
 /**
  * Template of plugin parser.
  */
-class MyPluginParser extends DefaultParser {
+class ElectrificatorParser extends DefaultParser {
   isParsable(fileInformation) {
     /*
      * Implement this to indicate which fileInformation your provider can manage.
@@ -15,6 +15,22 @@ class MyPluginParser extends DefaultParser {
     return super.isParsable(fileInformation);
   }
 
+  parse_object(key, value) {
+    if (typeof yourVariable === 'object' ) {
+      for( let [key, value] of Object.entries(yourVariable) ) {
+        this.parse_object(key, value);
+      }
+    }
+
+    if (key === "name") {
+      this.pluginData.components.push({
+        name: value,
+        type: "object",
+        attributes: [],
+      });
+    }
+  }
+
   parse(inputs = []) {
     /*
      * Implement your own parse function here.
@@ -24,9 +40,14 @@ class MyPluginParser extends DefaultParser {
      * In our plugin managing the terraform files, we use antlr for parsing. You can find an example
      * of the terraform parser in https://github.com/ditrit/iactor/blob/dev/src/parser/TerraformParser.js.
      */
+
     this.pluginData.components = [];
     this.pluginData.parseErrors = [];
+
+    inputs.forEach((input, index) => {
+      let file_content = JSON.parse(input, this.parse_object);
+    });
   }
 }
 
-export default MyPluginParser;
+export default ElectrificatorParser;

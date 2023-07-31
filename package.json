@@ -1,5 +1,5 @@
 {
-  "name": "leto-modelizer-plugin-template",
+  "name": "electrificator",
   "version": "0.1.0",
   "description": "Template for plugin creation",
   "main": "dist/my-plugin.js",

@@ -1,3 +1,3 @@
-import MyPlugin from 'src/models/MyPlugin';
+import ElectrificatorPlugin from 'src/models/ElectrificatorPlugin';
 
-export default MyPlugin;
+export default ElectrificatorPlugin;

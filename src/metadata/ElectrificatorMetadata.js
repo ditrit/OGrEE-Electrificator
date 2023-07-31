@@ -1,4 +1,4 @@
-import { DefaultMetadata } from 'leto-modelizer-plugin-core';
+import { DefaultMetadata, ComponentDefinition } from 'leto-modelizer-plugin-core';
 
 /*
  * Metadata is used to generate definition of Component and ComponentAttribute.
@@ -8,7 +8,7 @@ import { DefaultMetadata } from 'leto-modelizer-plugin-core';
  *
  * Feel free to manage your metadata as you wish.
  */
-class MyPluginMetadata extends DefaultMetadata {
+class ElectrificatorMetadata extends DefaultMetadata {
   validate() {
     return super.validate();
   }
@@ -23,10 +23,28 @@ class MyPluginMetadata extends DefaultMetadata {
      *
      * Both of them can be also used to check components in parser and generate errors.
      */
+
+    const objectDefinition =  new ComponentDefinition('object');
+    objectDefinition.definedAttributes.push(new ComponentAttributeDefinition(
+      'name',
+      'string',
+      [],
+      true,
+    ));
+    objectDefinition.isContainer = true;
+
+    const innerObjectDefinition =  new ComponentDefinition('innerObject');
+    innerObjectDefinition.definedAttributes.push(new ComponentAttributeDefinition(
+      'name',
+      'string',
+      [],
+      true,
+    ));
+
     this.pluginData.definitions = {
-      components: [],
+      components: [ objectDefinition, innerObjectDefinition],
     };
   }
 }
 
-export default MyPluginMetadata;
+export default ElectrificatorMetadata;
