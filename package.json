@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/ditrit/leto-modelizer-plugin-template#readme",
   "dependencies": {
+    "d3": "^7.8.5",
     "leto-modelizer-plugin-core": "github:ditrit/leto-modelizer-plugin-core#0.18.0"
   },
   "devDependencies": {
