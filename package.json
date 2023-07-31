@@ -5,6 +5,7 @@
   "main": "dist/electrificatorPlugin.js",
   "exports": "./dist/electrificatorPlugin.js",
   "scripts": {
+    "dev": "webpack --watch",
     "build": "webpack",
     "build:docs": "jsdoc --readme README.md --package package.json -r ./src/ -c jsdoc.config.json -d docs",
     "lint": "eslint --ext .js src",
