@@ -1,0 +1,1 @@
+/*! For license information please see leto-modelizer-plugin-core.js.LICENSE.txt */
