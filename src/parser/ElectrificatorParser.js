@@ -1,4 +1,4 @@
-import { DefaultParser } from 'leto-modelizer-plugin-core';
+import { Component, ComponentAttribute, DefaultParser } from 'leto-modelizer-plugin-core';
 
 /**
  * Template of plugin parser.
@@ -16,16 +16,16 @@ class ElectrificatorParser extends DefaultParser {
   }
 
   parse_object(key, value) {
-    if (typeof yourVariable === 'object' ) {
-      for( let [key, value] of Object.entries(yourVariable) ) {
+    if (typeof yourVariable === 'object') {
+      for (const [key, value] of Object.entries(yourVariable)) {
         this.parse_object(key, value);
       }
     }
 
-    if (key === "name") {
+    if (key === 'name') {
       this.pluginData.components.push({
         name: value,
-        type: "object",
+        type: 'object',
         attributes: [],
       });
     }
@@ -41,12 +41,13 @@ class ElectrificatorParser extends DefaultParser {
      * of the terraform parser in https://github.com/ditrit/iactor/blob/dev/src/parser/TerraformParser.js.
      */
 
-    this.pluginData.components = [];
-    this.pluginData.parseErrors = [];
-
+    /*
     inputs.forEach((input, index) => {
       let file_content = JSON.parse(input, this.parse_object);
-    });
+    }); */
+
+    this.pluginData.components = [];
+    this.pluginData.parseErrors = [];
   }
 }
 

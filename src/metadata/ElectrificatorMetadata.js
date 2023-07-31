@@ -24,6 +24,7 @@ class ElectrificatorMetadata extends DefaultMetadata {
      * Both of them can be also used to check components in parser and generate errors.
      */
 
+    /*
     const objectDefinition = new ComponentDefinition('object');
     objectDefinition.definedAttributes.push(new ComponentAttributeDefinition(
       'name',
@@ -44,6 +45,59 @@ class ElectrificatorMetadata extends DefaultMetadata {
     this.pluginData.definitions = {
       components: [objectDefinition, innerObjectDefinition],
     };
+    */
+
+    // DemoMetadata
+
+    this.pluginData.__nameAttributeDefinition = new ComponentAttributeDefinition({
+      name: 'name',
+      type: 'String',
+      required: true,
+      rules: {
+        min: 3,
+        max: 100,
+        regex: /[A-Z]{1}[a-z]+(-[A-Z]{1}[a-z]+)*/,
+      },
+    });
+
+    this.pluginData.__networkAttributeDefinition = new ComponentAttributeDefinition({
+      name: 'network',
+      type: 'Reference',
+      containerRef: 'network',
+    });
+
+    // Component Definitions
+    this.pluginData.__networkDefinition = new ComponentDefinition({
+      type: 'network',
+      icon: 'DefaultIcon',
+      model: 'DefaultContainer',
+      parentTypes: ['network'],
+      childrenTypes: ['server', 'network'],
+      definedAttributes: [this.pluginData.__nameAttributeDefinition,
+        this.pluginData.__networkAttributeDefinition],
+      isContainer: true,
+    });
+
+    this.pluginData.__serverDefinition = new ComponentDefinition({
+      type: 'server',
+      icon: 'DefaultIcon',
+      model: 'DefaultModel',
+      parentTypes: ['network'],
+      definedAttributes: [
+        this.pluginData.__nameAttributeDefinition,
+        this.pluginData.__networkAttributeDefinition,
+      ],
+      isContainer: false,
+    });
+
+    this.pluginData.definitions = {
+      components: [
+        this.pluginData.__networkDefinition,
+        this.pluginData.__serverDefinition,
+      ],
+    };
+
+    this.pluginData.initLinkDefinitions();
   }
 }
 
