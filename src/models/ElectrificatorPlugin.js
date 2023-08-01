@@ -14,8 +14,12 @@ import { name, version } from 'package.json';
 class ElectrificatorPlugin extends DefaultPlugin {
   /**
    * Default constructor.
+   *
+   * @param props
    */
-  constructor() {
+  constructor(props = {
+    event: null,
+  }) {
     const pluginConfiguration = new DefaultConfiguration({
       defaultFileName: 'datacenter.json',
     });
@@ -23,7 +27,7 @@ class ElectrificatorPlugin extends DefaultPlugin {
     const pluginData = new DefaultData(pluginConfiguration, {
       name,
       version,
-    });
+    }, props.event);
 
     super({
       pluginData,
