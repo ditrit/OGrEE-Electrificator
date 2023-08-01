@@ -28,7 +28,7 @@
         "containerObject"
         ],
     "childrenTypes": [
-        "containerObject"
+        "containerObject", "genericDipole"
         ],
     "isContainer": true,
     "available": true,
