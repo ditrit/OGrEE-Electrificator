@@ -1,5 +1,4 @@
 import { DefaultDrawer } from 'leto-modelizer-plugin-core';
-import * as d3 from 'd3';
 
 /*
  * By default the DefaultDrawer use D3 to draw.
