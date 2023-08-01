@@ -1,4 +1,8 @@
-import { DefaultMetadata, ComponentDefinition, ComponentAttributeDefinition } from 'leto-modelizer-plugin-core';
+import {
+  DefaultMetadata, ComponentDefinition, ComponentAttributeDefinition,
+} from 'leto-modelizer-plugin-core';
+
+import metadata from 'src/assets/metadata/index.js';
 
 /*
  * Metadata is used to generate definition of Component and ComponentAttribute.
@@ -24,76 +28,22 @@ class ElectrificatorMetadata extends DefaultMetadata {
      * Both of them can be also used to check components in parser and generate errors.
      */
 
-    /*
-    const objectDefinition = new ComponentDefinition('object');
-    objectDefinition.definedAttributes.push(new ComponentAttributeDefinition(
-      'name',
-      'string',
-      [],
-      true,
-    ));
-    objectDefinition.isContainer = true;
-
-    const innerObjectDefinition = new ComponentDefinition('innerObject');
-    innerObjectDefinition.definedAttributes.push(new ComponentAttributeDefinition(
-      'name',
-      'string',
-      [],
-      true,
-    ));
-
-    this.pluginData.definitions = {
-      components: [objectDefinition, innerObjectDefinition],
-    };
-    */
-
     // DemoMetadata
 
-    this.pluginData.__nameAttributeDefinition = new ComponentAttributeDefinition({
-      name: 'name',
-      type: 'String',
-      required: true,
-      rules: {
-        min: 3,
-        max: 100,
-        regex: /[A-Z]{1}[a-z]+(-[A-Z]{1}[a-z]+)*/,
-      },
-    });
+    const components = [];
 
-    this.pluginData.__networkAttributeDefinition = new ComponentAttributeDefinition({
-      name: 'network',
-      type: 'Reference',
-      containerRef: 'network',
-    });
-
-    // Component Definitions
-    this.pluginData.__networkDefinition = new ComponentDefinition({
-      type: 'network',
-      icon: 'DefaultIcon',
-      model: 'DefaultContainer',
-      parentTypes: ['network'],
-      childrenTypes: ['server', 'network'],
-      definedAttributes: [this.pluginData.__nameAttributeDefinition,
-        this.pluginData.__networkAttributeDefinition],
-      isContainer: true,
-    });
-
-    this.pluginData.__serverDefinition = new ComponentDefinition({
-      type: 'server',
-      icon: 'DefaultIcon',
-      model: 'DefaultModel',
-      parentTypes: ['network'],
-      definedAttributes: [
-        this.pluginData.__nameAttributeDefinition,
-        this.pluginData.__networkAttributeDefinition,
-      ],
-      isContainer: false,
+    Object.values(metadata.components).forEach((component) => {
+      console.log(component);
+      components.push(new ComponentDefinition({
+        ...component,
+        definedAttributes: component.attributes
+          .map((attribute) => new ComponentAttributeDefinition({ ...attribute })),
+      }));
     });
 
     this.pluginData.definitions = {
       components: [
-        this.pluginData.__networkDefinition,
-        this.pluginData.__serverDefinition,
+        ...components,
       ],
     };
 

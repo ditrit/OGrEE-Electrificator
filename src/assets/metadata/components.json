@@ -1,0 +1,81 @@
+{
+  "floor": {
+    "type": "floor",
+    "model": "DefaultContainer",
+    "displayName": "Floor",
+    "icon": "DefaultIcon",
+    "parentTypes": [],
+    "childrenTypes": [
+        "containerObject"
+        ],
+    "isContainer": true,
+    "available": true,
+    "attributes": [
+      {
+        "name": "name",
+        "type": "String",
+        "required": true,
+        "rules": {}
+      }
+    ]
+  },
+  "containerObject": {
+    "type": "containerObject",
+    "model": "DefaultContainer",
+    "displayName": "Container Object",
+    "icon": "DefaultIcon",
+    "parentTypes": [
+        "containerObject"
+        ],
+    "childrenTypes": [
+        "containerObject"
+        ],
+    "isContainer": true,
+    "available": true,
+    "attributes": [
+      {
+        "name": "name",
+        "type": "String",
+        "required": true,
+        "rules": {}
+      },
+      {
+        "name": "floor",
+        "type": "Reference",
+        "containerRef": "floor",
+        "required": true
+      }
+    ]
+  },
+  "genericDipole": {
+    "type": "genericDipole",
+    "model": "GenericDipole",
+    "displayName": "Generic Dipole",
+    "icon": "ResistorIcon",
+    "parentTypes": [
+        "containerObject"
+        ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "name",
+        "type": "String",
+        "required": true,
+        "rules": {}
+      },
+      {
+        "name": "parent",
+        "type": "Reference",
+        "containerRef": "containerObject",
+        "required": true
+      },
+      {
+        "name": "Port in",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "genericDipole"
+      }
+    ]
+  }
+}
