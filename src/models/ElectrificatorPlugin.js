@@ -4,7 +4,7 @@ import {
 } from 'leto-modelizer-plugin-core';
 import ElectrificatorDrawer from 'src/draw/ElectrificatorDrawer';
 import ElectrificatorMetadata from 'src/metadata/ElectrificatorMetadata';
-import ElectrificatorParser from 'src/parser/ElectrificatorParser';
+import { ElectrificatorParser } from 'src/parser/ElectrificatorParser';
 import ElectrificatorRenderer from 'src/render/ElectrificatorRenderer';
 import { name, version } from 'package.json';
 

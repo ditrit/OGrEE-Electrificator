@@ -1,7 +1,7 @@
 import ElectrificatorPlugin from 'src/index';
 import ElectrificatorDrawer from 'src/draw/ElectrificatorDrawer';
 import ElectrificatorMetadata from 'src/metadata/ElectrificatorMetadata';
-import ElectrificatorParser from 'src/parser/ElectrificatorParser';
+import { ElectrificatorParser } from 'src/parser/ElectrificatorParser';
 import ElectrificatorRenderer from 'src/render/ElectrificatorRenderer';
 
 describe('Test index of project', () => {
