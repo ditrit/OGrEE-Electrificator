@@ -103,7 +103,51 @@ class ElectrificatorListener {
   }
 
   enter_Interface(ctx) {
+    const definition = this.definitions.find((def) => def.type === 'interface');
 
+    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
+      const attributeDefinition = definition.definedAttributes.find(
+        (attribute) => attribute.name === key,
+      );
+      acc.push(new ComponentAttribute({
+        name: key,
+        value,
+        type: 'string',
+        definition: attributeDefinition || null,
+      }));
+      return acc;
+    }, []);
+
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+
+    attributes.push(new ComponentAttribute({
+      name: 'role',
+      value: ctx.current.role,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'role'),
+    }));
+
+    attributes.push(new ComponentAttribute({
+      name: 'domain',
+      value: ctx.current.domain,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'domain'),
+    }));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
   }
 
   exit_Interface(ctx) {

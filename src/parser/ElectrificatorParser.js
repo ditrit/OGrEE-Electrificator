@@ -86,24 +86,26 @@ class ElectrificatorParser extends DefaultParser {
         },
       });
       const listener = new ElectrificatorListener(input, this.pluginData.definitions.components);
-      // TODO: interface taken from lidy-js, maybe use another one ?
+      const progress = {
+        errors: [],
+        warnings: [],
+        imports: [],
+        alreadyImported: [],
+        root: [],
+      };
+
       try {
+        // TODO: interface taken from lidy-js, maybe use another one ?
         this.parseFile(
           input.content,
           listener,
           input.path,
-          {
-            errors: [],
-            warnings: [],
-            imports: [],
-            alreadyImported: [],
-            root: [],
-          },
+          progress,
         );
       } catch (e) {
+        console.log(progress);
         console.log(e);
       }
-
       listener.components.forEach((component) => this.pluginData.components.push(component));
       this.pluginData.emitEvent({ id, status: 'success' });
     });
@@ -139,9 +141,11 @@ class ElectrificatorParser extends DefaultParser {
    * @param {object} prog The progress object.
    */
   parseObject(srcObject, listener, path, prog) {
-    console.log(`parsing ${JSON.stringify(srcObject)}`);
     if (!srcObject.type) {
-      console.log(`no type, skipping ${JSON.stringify(srcObject)}`);
+      prog.warnings.push({
+        code: 'no_type',
+        message: 'No type found',
+      });
       return;
     }
 
@@ -154,7 +158,7 @@ class ElectrificatorParser extends DefaultParser {
         srcObject.links?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
-        srcObject.interface?.forEach((value) => {
+        srcObject.interfaces?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
         listener.exit_Container({ current: srcObject });

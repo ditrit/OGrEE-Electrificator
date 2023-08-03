@@ -86,7 +86,7 @@
     "available": true,
     "attributes": [
       {
-        "name": "parent",
+        "name": "parentContainer",
         "type": "Reference",
         "containerRef": "container",
         "displayName": "Parent",
