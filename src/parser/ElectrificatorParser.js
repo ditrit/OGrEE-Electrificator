@@ -74,6 +74,7 @@ class ElectrificatorParser extends DefaultParser {
 
       return false;
     }).forEach((input) => {
+      console.log(`reading file ${input.path}`);
       const id = this.pluginData.emitEvent({
         parent: parentEventId,
         type: 'Parser',
@@ -86,18 +87,24 @@ class ElectrificatorParser extends DefaultParser {
       });
       const listener = new ElectrificatorListener(input, this.pluginData.definitions.components);
       // TODO: interface taken from lidy-js, maybe use another one ?
-      this.parseFile(
-        input.content,
-        listener,
-        input.path,
-        {
-          errors: [],
-          warnings: [],
-          imports: [],
-          alreadyImported: [],
-          root: [],
-        },
-      );
+      try {
+        this.parseFile(
+          input.content,
+          listener,
+          input.path,
+          {
+            errors: [],
+            warnings: [],
+            imports: [],
+            alreadyImported: [],
+            root: [],
+          },
+        );
+      } catch (e) {
+        console.log(e);
+      }
+
+      console.log(JSON.stringify(listener.components, null, 2));
       listener.components.forEach((component) => this.pluginData.components.push(component));
       this.pluginData.emitEvent({ id, status: 'success' });
     });
@@ -121,6 +128,7 @@ class ElectrificatorParser extends DefaultParser {
     } else {
       this.parseObject(data, listener, path, prog);
     }
+    console.log(`parsed ${path}`);
   }
 
   /**
@@ -134,7 +142,7 @@ class ElectrificatorParser extends DefaultParser {
   parseObject(srcObject, listener, path, prog) {
     console.log(`parsing ${JSON.stringify(srcObject)}`);
     if (!srcObject.type) {
-      console.log(`no type, skipping ${srcObject.toString()}`);
+      console.log(`no type, skipping ${JSON.stringify(srcObject)}`);
       return;
     }
 

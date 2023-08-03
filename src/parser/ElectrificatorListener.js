@@ -57,11 +57,15 @@ class ElectrificatorListener {
   }
 
   enter_Container(ctx) {
+    console.log(this.definitions);
+
     console.log(`enter_Container: ${ctx.current.name}`);
     this.currentContainer = this.createComponent(
       ctx.current.name,
       this.definitions.find((definition) => definition.type === 'container'),
-      ctx.current.attributes,
+      [],
+      // ctx.current.attributes.entries().reduce((acc, [key, value]) => {
+      //       }, [])
     );
   }
 

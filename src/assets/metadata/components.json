@@ -6,7 +6,7 @@
     "icon": "DefaultIcon",
     "parentTypes": [],
     "childrenTypes": [
-        "containerObject"
+        "container"
         ],
     "isContainer": true,
     "available": true,
@@ -19,31 +19,25 @@
       }
     ]
   },
-  "containerObject": {
-    "type": "containerObject",
+  "container": {
+    "type": "container",
     "model": "DefaultContainer",
     "displayName": "Container Object",
     "icon": "DefaultIcon",
     "parentTypes": [
-        "containerObject"
+        "container"
         ],
     "childrenTypes": [
-        "containerObject", "genericDipole"
+        "container", "genericDipole"
         ],
     "isContainer": true,
     "available": true,
     "attributes": [
       {
-        "name": "name",
-        "type": "String",
-        "required": true,
-        "rules": {}
-      },
-      {
         "name": "floor",
         "type": "Reference",
         "containerRef": "floor",
-        "required": true
+        "required": false
       }
     ]
   },
@@ -53,21 +47,15 @@
     "displayName": "Generic Dipole",
     "icon": "ResistorIcon",
     "parentTypes": [
-        "containerObject"
+        "container"
         ],
     "isContainer": false,
     "available": true,
     "attributes": [
       {
-        "name": "name",
-        "type": "String",
-        "required": true,
-        "rules": {}
-      },
-      {
         "name": "parent",
         "type": "Reference",
-        "containerRef": "containerObject",
+        "containerRef": "container",
         "required": true
       },
       {
