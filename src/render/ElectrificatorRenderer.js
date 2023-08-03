@@ -165,8 +165,8 @@ class ElectrificatorRenderer extends DefaultRender {
         type: 'container',
         name: parentObjectName,
       };
-      parent[parentField] = contentDict;
-      objectList.push({ parent });
+      parent[parentField] = [contentDict];
+      objectList.push(parent);
     }
   }
 
@@ -261,7 +261,7 @@ class ElectrificatorRenderer extends DefaultRender {
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
-      } else if (attribute.definition?.name === 'parent') {
+      } else if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
       } else if (attribute.definition?.name === 'domain') {
         domain = attribute.value;
