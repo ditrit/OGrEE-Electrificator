@@ -28,7 +28,7 @@
         "container"
         ],
     "childrenTypes": [
-        "container", "genericDipole"
+        "container", "genericDipole", "interface"
         ],
     "isContainer": true,
     "available": true,
@@ -71,6 +71,44 @@
         "type": "Link",
         "linkType": "Reverse",
         "linkRef": "genericDipole"
+      }
+    ]
+  },
+  "interface": {
+    "type": "interface",
+    "model": "DefaultModel",
+    "displayName": "Interface",
+    "icon": "InterfaceIcon",
+    "parentTypes": [
+        "container"
+        ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "displayName": "Parent",
+        "required": true
+      },
+      {
+        "name": "role",
+        "displayName": "Role",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "phase",
+        "displayName": "Phase",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "domain",
+        "displayName": "Domain",
+        "type": "String",
+        "required": false
       }
     ]
   }
