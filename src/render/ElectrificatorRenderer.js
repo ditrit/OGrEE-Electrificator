@@ -82,15 +82,11 @@ class ElectrificatorRenderer extends DefaultRender {
           global: false,
         },
       });
-      console.log(components);
-      console.log(path);
       components.forEach((component) => {
         this.parseComponent(parsedComponents, component);
       });
       console.log(parsedComponents);
-      const generatedContentFromParsedComponents = parsedComponents.reduce((acc, value) => acc.concat(JSON.stringify(value)), '');
-
-      console.log(generatedContentFromParsedComponents);
+      const generatedContentFromParsedComponents = JSON.stringify(parsedComponents, null, 2);
       files.push(new FileInput({
         path,
         // content: `${this.template.render({ components }).trim()}\n`,
@@ -113,7 +109,7 @@ class ElectrificatorRenderer extends DefaultRender {
     let contentDict = {};
     let parent = null;
 
-    if (currentComponent?.definition.type === 'containerObject') {
+    if (currentComponent?.definition.type === 'container') {
       contentDict = {
         name: currentComponent.id,
         type: 'container',
