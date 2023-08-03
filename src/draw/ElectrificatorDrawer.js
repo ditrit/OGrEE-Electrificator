@@ -14,4 +14,4 @@ class ElectrificatorDrawer extends DefaultDrawer {
   }
 }
 
-export default ElectrificatorDrawer;
+export { ElectrificatorDrawer };

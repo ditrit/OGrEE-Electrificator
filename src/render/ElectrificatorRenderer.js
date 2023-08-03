@@ -230,4 +230,4 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 }
 
-export default ElectrificatorRenderer;
+export { ElectrificatorRenderer };

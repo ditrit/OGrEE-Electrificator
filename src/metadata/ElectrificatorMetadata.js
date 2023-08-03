@@ -51,4 +51,4 @@ class ElectrificatorMetadata extends DefaultMetadata {
   }
 }
 
-export default ElectrificatorMetadata;
+export { ElectrificatorMetadata };

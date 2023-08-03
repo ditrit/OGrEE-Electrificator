@@ -2,10 +2,10 @@ import {
   DefaultPlugin,
   DefaultData, DefaultConfiguration,
 } from 'leto-modelizer-plugin-core';
-import ElectrificatorDrawer from 'src/draw/ElectrificatorDrawer';
-import ElectrificatorMetadata from 'src/metadata/ElectrificatorMetadata';
+import { ElectrificatorDrawer } from 'src/draw/ElectrificatorDrawer';
+import { ElectrificatorMetadata } from 'src/metadata/ElectrificatorMetadata';
 import { ElectrificatorParser } from 'src/parser/ElectrificatorParser';
-import ElectrificatorRenderer from 'src/render/ElectrificatorRenderer';
+import { ElectrificatorRenderer } from 'src/render/ElectrificatorRenderer';
 import { name, version } from 'package.json';
 
 /**
@@ -40,4 +40,4 @@ class ElectrificatorPlugin extends DefaultPlugin {
   }
 }
 
-export default ElectrificatorPlugin;
+export { ElectrificatorPlugin };
