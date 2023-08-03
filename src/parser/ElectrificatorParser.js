@@ -145,29 +145,34 @@ class ElectrificatorParser extends DefaultParser {
       return;
     }
 
-    if (srcObject.type === 'container') {
-      listener.enter_Container({ current: srcObject });
-      srcObject.objects?.forEach((value) => {
-        this.parseObject(value, listener, path, prog);
-      });
-      srcObject.links?.forEach((value) => {
-        this.parseObject(value, listener, path, prog);
-      });
-      srcObject.interface?.forEach((value) => {
-        this.parseObject(value, listener, path, prog);
-      });
-      listener.exit_Container({ current: srcObject });
-    } else if (srcObject.type === 'interface') {
-      listener.enter_Interface({ current: srcObject });
-      listener.exit_Interface({ current: srcObject });
-    } else if (srcObject.type === 'link') {
-      listener.enter_Link({ current: srcObject });
-      listener.exit_Link({ current: srcObject });
-    } else if (srcObject.type === 'atomicObject') {
-      listener.enter_atomicObject({ current: srcObject });
-      listener.exit_atomicObject({ current: srcObject });
-    } else {
-
+    switch (srcObject.type) {
+      case 'container':
+        listener.enter_Container({ current: srcObject });
+        srcObject.objects?.forEach((value) => {
+          this.parseObject(value, listener, path, prog);
+        });
+        srcObject.links?.forEach((value) => {
+          this.parseObject(value, listener, path, prog);
+        });
+        srcObject.interface?.forEach((value) => {
+          this.parseObject(value, listener, path, prog);
+        });
+        listener.exit_Container({ current: srcObject });
+        break;
+      case 'interface':
+        listener.enter_Interface({ current: srcObject });
+        listener.exit_Interface({ current: srcObject });
+        break;
+      case 'link':
+        listener.enter_Link({ current: srcObject });
+        listener.exit_Link({ current: srcObject });
+        break;
+      case 'atomicObject':
+        listener.enter_atomicObject({ current: srcObject });
+        listener.exit_atomicObject({ current: srcObject });
+        break;
+      default:
+        break;
     }
   }
 }
