@@ -61,7 +61,15 @@ class ElectrificatorListener {
       (def) => def.type === 'container',
     );
     const attributes = Object.entries(ctx.current.attributes).reduce(
-      (acc, [key, value]) => acc,
+      (acc, [key, value]) => {
+        acc.push(new ComponentAttribute({
+          name: key,
+          value,
+          type: 'string',
+          definition: null,
+        }));
+        return acc;
+      },
       [],
     );
 
