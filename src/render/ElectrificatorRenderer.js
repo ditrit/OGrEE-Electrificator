@@ -1,6 +1,7 @@
 import nunjucks from 'nunjucks';
 import templates from 'src/render/ElectrificatorTemplate';
 import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
+import { number } from 'nunjucks/src/tests';
 
 /**
  * Template of plugin renderer.
@@ -85,6 +86,7 @@ class ElectrificatorRenderer extends DefaultRender {
       components.forEach((component) => {
         this.parseComponent(parsedComponents, component);
       });
+      console.log('parsedComponents: ');
       console.log(parsedComponents);
       const generatedContentFromParsedComponents = JSON.stringify(parsedComponents, null, 2);
       files.push(new FileInput({
@@ -106,32 +108,18 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent - Current component.
    */
   parseComponent(renderedComponentList, currentComponent) {
-    let contentDict = {};
-    let parent = null;
-
-    if (currentComponent?.definition.type === 'container') {
-      this.renderContainerObject(renderedComponentList, currentComponent);
-    } else if (currentComponent?.definition.type === 'interface') {
-      this.renderInterface(renderedComponentList, currentComponent);
-    } else if (currentComponent?.definition.type === 'genericDipole') {
-      parent = 'root';
-      contentDict = {
-        name: currentComponent.id,
-        attributes: {
-          type: 'genericDipole',
-        },
-        domain: 'electrical',
-        category: 'electrical_device',
-        description: currentComponent.definition.description,
-      };
-      console.log(currentComponent?.attributes.values());
-      currentComponent?.attributes.forEach((attribute) => {
-        console.log(`attribute: ${attribute}`);
-        if (attribute.definition?.name === 'parent') {
-          parent = attribute.value;
-        }
-      });
-      this.appendContentDictToContainerObjects(renderedComponentList, parent, contentDict);
+    switch (currentComponent?.definition.type) {
+      case 'container':
+        this.renderContainerObject(renderedComponentList, currentComponent);
+        break;
+      case 'interface':
+        this.renderInterface(renderedComponentList, currentComponent);
+        break;
+      case 'genericDipole':
+        this.renderGenericDipole(renderedComponentList, currentComponent);
+        break;
+      default:
+        break;
     }
   }
 
@@ -160,19 +148,46 @@ class ElectrificatorRenderer extends DefaultRender {
    *
    * @param {object[]} objectList List of objects
    * @param {string} parentObjectName  Name of the object to which the contentDict is to be appended
+   * @param {string} parentField Name of the field in the object to which
+   * the contentDict is to be appended
    * @param {object} contentDict Content to be appended
    */
-  appendContentDictToContainerObjects(objectList, parentObjectName, contentDict) {
+  appendContentDictToContainer(objectList, parentObjectName, parentField, contentDict) {
     const containerObject = this.getObjectFromListByName(objectList, parentObjectName);
     if (containerObject) {
-      containerObject.objects.push(contentDict);
+      if (!containerObject[parentField]) {
+        containerObject[parentField] = [contentDict];
+      } else {
+        containerObject[parentField].push(contentDict);
+      }
     } else {
-      objectList.push({
+      const parent = {
         type: 'container',
         name: parentObjectName,
-        objects: [contentDict],
-      });
+      };
+      parent[parentField] = contentDict;
+      objectList.push({ parent });
     }
+  }
+
+  renderGenericDipole(renderedComponentList, currentComponent) {
+    let parent = 'root';
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parent') {
+        parent = attribute.value;
+      }
+    });
+    const contentDict = {
+      name: currentComponent.id,
+      attributes: {
+        type: 'genericDipole',
+      },
+      domain: 'electrical',
+      category: 'device',
+      description: currentComponent.definition.description,
+    };
+
+    this.appendContentDictToContainer(renderedComponentList, parent, 'objects', contentDict);
   }
 
   /**
@@ -240,7 +255,7 @@ class ElectrificatorRenderer extends DefaultRender {
    */
 
   renderInterface(renderedComponentList, currentComponent) {
-    let parentId = null;
+    let parentId = 'root';
     let domain = null;
     let role = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
@@ -259,13 +274,14 @@ class ElectrificatorRenderer extends DefaultRender {
     const contentDict = {
       name: currentComponent.id,
       type: 'interface',
+      parentId,
       attributes,
       role,
       domain,
       description: currentComponent.definition.description,
     };
 
-    this.appendContentDictToContainerObjects(renderedComponentList, parentId, contentDict);
+    this.appendContentDictToContainer(renderedComponentList, parentId, 'interfaces', contentDict);
   }
 }
 
