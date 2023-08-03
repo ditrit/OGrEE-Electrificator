@@ -110,23 +110,7 @@ class ElectrificatorRenderer extends DefaultRender {
     let parent = null;
 
     if (currentComponent?.definition.type === 'container') {
-      contentDict = {
-        name: currentComponent.id,
-        type: 'container',
-        attributes: {},
-        domain: 'electrical',
-        category: 'electrical_device',
-        description: currentComponent.definition.description,
-        objects: [],
-        links: [],
-        interfaces: [],
-      };
-      currentComponent?.attributes.forEach((attribute) => {
-        if (attribute.definition?.name === 'parent') {
-          parent = attribute.value;
-        }
-      });
-      this.parseContainerObject(componentList, parent, currentComponent.id, contentDict);
+      this.renderContainerObject(componentList, currentComponent.id, currentComponent);
     }
 
     if (currentComponent?.definition.type === 'genericDipole') {
@@ -198,28 +182,48 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {string|null} parentObjectName Name of the object to which the contentDict
    * is to be appended
    * @param {string} childrenObjectName  Name of the object to which the contentDict belongs.
-   * @param {object} contentDict Content to be appended
+   * @param {Component} currentComponent Content to be appended
    */
-  parseContainerObject(
+  renderContainerObject(
     objectList,
-    parentObjectName,
     childrenObjectName,
-    contentDict,
+    currentComponent,
   ) {
+    let parentObjectName = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parent' || attribute.definition?.name === 'parentContainer'
+          || attribute.definition?.name === 'floor') {
+        parentObjectName = attribute.value;
+      }
+    });
+
+    let contentDict = {
+      name: currentComponent.id,
+      parentId: parentObjectName,
+      type: 'container',
+      attributes: {},
+      domain: 'electrical',
+      category: 'electrical_device',
+      description: currentComponent.definition.description,
+      objects: [],
+      links: [],
+      interfaces: [],
+    };
+
     const currentObject = this.getObjectFromListByName(objectList, childrenObjectName);
     // The current object already exists in the list,
     // we have to remove it from the list and add it to the parent object
     if (currentObject) {
       objectList.splice(objectList.indexOf(currentObject), 1);
       contentDict = {
-        ...currentObject,
         ...contentDict,
+        ...currentObject,
       };
     }
 
-    const containerObject = this.getObjectFromListByName(objectList, parentObjectName);
-    if (containerObject) {
-      containerObject.objects.push(contentDict);
+    const parentObject = this.getObjectFromListByName(objectList, parentObjectName);
+    if (parentObject) {
+      parentObject.objects.push(contentDict);
     } else {
       objectList.push(contentDict);
     }

@@ -35,8 +35,16 @@
     "attributes": [
       {
         "name": "floor",
+        "displayName": "Floor",
         "type": "Reference",
         "containerRef": "floor",
+        "required": false
+      },
+      {
+        "name": "parentContainer",
+        "displayName": "Parent Container",
+        "type": "Reference",
+        "containerRef": "container",
         "required": false
       }
     ]

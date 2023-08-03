@@ -1,4 +1,4 @@
-import { Component } from 'leto-modelizer-plugin-core';
+import { Component, ComponentAttribute } from 'leto-modelizer-plugin-core';
 
 /**
  * ElectrificatorListener for json files
@@ -12,11 +12,11 @@ class ElectrificatorListener {
   components = [];
 
   /**
-   * Current Container
+   * Container stack.
    *
-   * @type {Component}
+   * @type {Component[]}
    */
-  currentContainer = null;
+  containerStack = [];
 
   /**
    * Default constructor.
@@ -57,21 +57,33 @@ class ElectrificatorListener {
   }
 
   enter_Container(ctx) {
-    console.log(this.definitions);
-
-    console.log(`enter_Container: ${ctx.current.name}`);
-    this.currentContainer = this.createComponent(
-      ctx.current.name,
-      this.definitions.find((definition) => definition.type === 'container'),
-      [],
-      // ctx.current.attributes.entries().reduce((acc, [key, value]) => {
-      //       }, [])
+    const definition = this.definitions.find(
+      (def) => def.type === 'container',
     );
+    const attributes = Object.entries(ctx.current.attributes).reduce(
+      (acc, [key, value]) => acc,
+      [],
+    );
+
+    // Check if there is a parent container in the stack.
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+    this.containerStack.push(this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    ));
   }
 
   exit_Container(ctx) {
-    this.components.push(this.currentContainer);
-    this.currentContainer = null;
+    this.components.push(this.containerStack.pop());
   }
 
   enter_Link(ctx) {

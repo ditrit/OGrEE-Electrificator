@@ -104,7 +104,6 @@ class ElectrificatorParser extends DefaultParser {
         console.log(e);
       }
 
-      console.log(JSON.stringify(listener.components, null, 2));
       listener.components.forEach((component) => this.pluginData.components.push(component));
       this.pluginData.emitEvent({ id, status: 'success' });
     });
