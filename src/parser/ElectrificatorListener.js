@@ -102,8 +102,8 @@ class ElectrificatorListener {
 
   }
 
-  enter_Interface(ctx) {
-    const definition = this.definitions.find((def) => def.type === 'interface');
+  enter_electricalInterface(ctx) {
+    const definition = this.definitions.find((def) => def.type === 'electricalInterface');
 
     const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
       const attributeDefinition = definition.definedAttributes.find(
@@ -135,13 +135,6 @@ class ElectrificatorListener {
       definition: definition.definedAttributes.find((attribute) => attribute.name === 'role'),
     }));
 
-    attributes.push(new ComponentAttribute({
-      name: 'domain',
-      value: ctx.current.domain,
-      type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === 'domain'),
-    }));
-
     const component = this.createComponent(
       ctx.current.name,
       definition,
@@ -150,7 +143,7 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_Interface(ctx) {
+  exit_electricalInterface(ctx) {
 
   }
 

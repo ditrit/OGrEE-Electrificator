@@ -28,7 +28,7 @@
         "container"
         ],
     "childrenTypes": [
-        "container", "genericDipole", "interface"
+        "container", "genericDipole", "electricalInterface", "electricalLine"
         ],
     "isContainer": true,
     "available": true,
@@ -74,10 +74,10 @@
       }
     ]
   },
-  "interface": {
-    "type": "interface",
+  "electricalInterface": {
+    "type": "electricalInterface",
     "model": "DefaultModel",
-    "displayName": "Interface",
+    "displayName": "Electrical Interface",
     "icon": "InterfaceIcon",
     "parentTypes": [
         "container"
@@ -93,9 +93,59 @@
         "required": true
       },
       {
+        "name": "in",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine",
+        "required": false
+      },
+      {
+        "name": "out",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine",
+        "required": false
+      },
+      {
         "name": "role",
         "displayName": "Role",
         "type": "String",
+        "required": false
+      },
+      {
+        "name": "phase",
+        "displayName": "Phase",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  "electricalLine": {
+    "type": "electricalLine",
+    "model": "DefaultModel",
+    "displayName": "Electrical Line",
+    "icon": "LinkIcon",
+    "parentTypes": [
+        "container"
+        ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "type": "Reference",
+        "containerRef": "container",
+        "displayName": "Parent",
+        "required": true
+      },
+      {
+        "name": "in",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine",
         "required": false
       },
       {

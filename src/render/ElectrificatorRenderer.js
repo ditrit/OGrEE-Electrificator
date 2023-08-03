@@ -112,8 +112,8 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'container':
         this.renderContainerObject(renderedComponentList, currentComponent);
         break;
-      case 'interface':
-        this.renderInterface(renderedComponentList, currentComponent);
+      case 'electricalInterface':
+        this.renderElectricalInterface(renderedComponentList, currentComponent);
         break;
       case 'genericDipole':
         this.renderGenericDipole(renderedComponentList, currentComponent);
@@ -254,17 +254,14 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent Current component to be rendered
    */
 
-  renderInterface(renderedComponentList, currentComponent) {
+  renderElectricalInterface(renderedComponentList, currentComponent) {
     let parentId = 'root';
-    let domain = null;
     let role = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
       } else if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
-      } else if (attribute.definition?.name === 'domain') {
-        domain = attribute.value;
       } else if (attribute.definition?.name === 'role') {
         role = attribute.value;
       }
@@ -273,11 +270,11 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      type: 'interface',
+      type: 'electrical_interface',
       parentId,
       attributes,
       role,
-      domain,
+      domain: 'electrical',
       description: currentComponent.definition.description,
     };
 

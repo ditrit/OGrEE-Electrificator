@@ -163,9 +163,9 @@ class ElectrificatorParser extends DefaultParser {
         });
         listener.exit_Container({ current: srcObject });
         break;
-      case 'interface':
-        listener.enter_Interface({ current: srcObject });
-        listener.exit_Interface({ current: srcObject });
+      case 'electrical_interface':
+        listener.enter_electricalInterface({ current: srcObject });
+        listener.exit_electricalInterface({ current: srcObject });
         break;
       case 'link':
         listener.enter_Link({ current: srcObject });
