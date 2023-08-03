@@ -23,7 +23,7 @@
     "type": "container",
     "model": "DefaultContainer",
     "displayName": "Container Object",
-    "icon": "DefaultIcon",
+    "icon": "ContainerIcon",
     "parentTypes": [
         "container"
         ],
