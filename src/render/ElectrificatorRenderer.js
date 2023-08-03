@@ -102,18 +102,18 @@ class ElectrificatorRenderer extends DefaultRender {
   /**
    * Append content dict to container objects.
    *
-   * @param {object[]} componentList - List of components.
+   * @param {object[]} renderedComponentList - List of components.
    * @param {Component} currentComponent - Current component.
    */
-  parseComponent(componentList, currentComponent) {
+  parseComponent(renderedComponentList, currentComponent) {
     let contentDict = {};
     let parent = null;
 
     if (currentComponent?.definition.type === 'container') {
-      this.renderContainerObject(componentList, currentComponent.id, currentComponent);
-    }
-
-    if (currentComponent?.definition.type === 'genericDipole') {
+      this.renderContainerObject(renderedComponentList, currentComponent);
+    } else if (currentComponent?.definition.type === 'interface') {
+      this.renderInterface(renderedComponentList, currentComponent);
+    } else if (currentComponent?.definition.type === 'genericDipole') {
       parent = 'root';
       contentDict = {
         name: currentComponent.id,
@@ -131,7 +131,7 @@ class ElectrificatorRenderer extends DefaultRender {
           parent = attribute.value;
         }
       });
-      this.appendContentDictToContainerObjects(componentList, parent, contentDict);
+      this.appendContentDictToContainerObjects(renderedComponentList, parent, contentDict);
     }
   }
 
@@ -178,15 +178,11 @@ class ElectrificatorRenderer extends DefaultRender {
   /**
    * Append contentDict to the objects field of the object with the name
    *
-   * @param {object[]} objectList List of objects
-   * @param {string|null} parentObjectName Name of the object to which the contentDict
-   * is to be appended
-   * @param {string} childrenObjectName  Name of the object to which the contentDict belongs.
+   * @param {object[]} renderedComponentList List of objects
    * @param {Component} currentComponent Content to be appended
    */
   renderContainerObject(
-    objectList,
-    childrenObjectName,
+    renderedComponentList,
     currentComponent,
   ) {
     let parentObjectName = null;
@@ -197,11 +193,18 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
+    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
+      if (attribute.definition === null) {
+        acc[attribute.name] = attribute.value;
+      }
+      return acc;
+    }, {});
+
     let contentDict = {
       name: currentComponent.id,
       parentId: parentObjectName,
       type: 'container',
-      attributes: {},
+      attributes,
       domain: 'electrical',
       category: 'electrical_device',
       description: currentComponent.definition.description,
@@ -210,23 +213,59 @@ class ElectrificatorRenderer extends DefaultRender {
       interfaces: [],
     };
 
-    const currentObject = this.getObjectFromListByName(objectList, childrenObjectName);
+    const currentObject = this.getObjectFromListByName(renderedComponentList, currentComponent.id);
     // The current object already exists in the list,
     // we have to remove it from the list and add it to the parent object
     if (currentObject) {
-      objectList.splice(objectList.indexOf(currentObject), 1);
+      renderedComponentList.splice(renderedComponentList.indexOf(currentObject), 1);
       contentDict = {
         ...contentDict,
         ...currentObject,
       };
     }
 
-    const parentObject = this.getObjectFromListByName(objectList, parentObjectName);
+    const parentObject = this.getObjectFromListByName(renderedComponentList, parentObjectName);
     if (parentObject) {
       parentObject.objects.push(contentDict);
     } else {
-      objectList.push(contentDict);
+      renderedComponentList.push(contentDict);
     }
+  }
+
+  /**
+   * Render interfaces in a specified format and add it to the object list.
+   *
+   * @param {object[]} renderedComponentList List of components that have already been rendered
+   * @param {Component} currentComponent Current component to be rendered
+   */
+
+  renderInterface(renderedComponentList, currentComponent) {
+    let parentId = null;
+    let domain = null;
+    let role = null;
+    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
+      if (attribute.definition === null || attribute.definition?.name === 'phase') {
+        acc[attribute.name] = attribute.value;
+      } else if (attribute.definition?.name === 'parent') {
+        parentId = attribute.value;
+      } else if (attribute.definition?.name === 'domain') {
+        domain = attribute.value;
+      } else if (attribute.definition?.name === 'role') {
+        role = attribute.value;
+      }
+      return acc;
+    }, {});
+
+    const contentDict = {
+      name: currentComponent.id,
+      type: 'interface',
+      attributes,
+      role,
+      domain,
+      description: currentComponent.definition.description,
+    };
+
+    this.appendContentDictToContainerObjects(renderedComponentList, parentId, contentDict);
   }
 }
 
