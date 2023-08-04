@@ -138,25 +138,11 @@
         "type": "Reference",
         "containerRef": "container",
         "displayName": "Parent",
-        "required": true
-      },
-      {
-        "name": "in",
-        "displayName": "In",
-        "type": "Link",
-        "linkType": "Reverse",
-        "linkRef": "electricalLine",
         "required": false
       },
       {
         "name": "phase",
         "displayName": "Phase",
-        "type": "String",
-        "required": false
-      },
-      {
-        "name": "domain",
-        "displayName": "Domain",
         "type": "String",
         "required": false
       }

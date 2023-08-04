@@ -118,6 +118,8 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'genericDipole':
         this.renderGenericDipole(renderedComponentList, currentComponent);
         break;
+      case 'electricalLine':
+        this.renderElectricalLine(renderedComponentList, currentComponent);
       default:
         break;
     }
@@ -279,6 +281,36 @@ class ElectrificatorRenderer extends DefaultRender {
     };
 
     this.appendContentDictToContainer(renderedComponentList, parentId, 'interfaces', contentDict);
+  }
+
+  /**
+   * Render links in a specified format and add it to the object list.
+   *
+   * @param {object[] } renderedComponentList List of components that have already been rendered
+   * @param { Component} currentComponent Current component to be rendered
+   */
+  renderElectricalLine(renderedComponentList, currentComponent) {
+    let parentId = 'root';
+    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
+      if (attribute.definition === null || attribute.definition?.name === 'phase') {
+        acc[attribute.name] = attribute.value;
+      } else if (attribute.definition?.name === 'parentContainer') {
+        parentId = attribute.value;
+      }
+      return acc;
+    }, {});
+
+    const contentDict = {
+      name: currentComponent.id,
+      type: 'electrical_line',
+      parentId,
+      attributes,
+      domain: 'electrical',
+      description: currentComponent.definition.description,
+      ports: { in: [], out: [] },
+    };
+
+    this.appendContentDictToContainer(renderedComponentList, parentId, 'links', contentDict);
   }
 }
 
