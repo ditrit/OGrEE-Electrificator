@@ -178,11 +178,60 @@ class ElectrificatorListener {
 
   }
 
-  enter_atomicObject(ctx) {
+  enter_circuitBreaker(ctx) {
+    const definition = this.definitions.find((def) => def.type === 'circuitBreaker');
 
+    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
+      const attributeDefinition = definition.definedAttributes.find(
+        (attribute) => attribute.name === key,
+      );
+      acc.push(new ComponentAttribute({
+        name: key,
+        value,
+        type: 'string',
+        definition: attributeDefinition || null,
+      }));
+      return acc;
+    }, []);
+
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+
+    attributes.push(new ComponentAttribute({
+      name: 'portIn',
+      value: ctx.current.ports.in.filter((port) => port.name === 'portIn')[0].linkedTo,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portIn'),
+    }));
+    attributes.push(new ComponentAttribute({
+      name: 'portOut',
+      value: ctx.current.ports.out.filter((port) => port.name === 'portOut')[0].linkedTo,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portOut'),
+    }));
+    attributes.push(new ComponentAttribute({
+      name: 'portControl',
+      value: ctx.current.ports.in.filter((port) => port.name === 'portControl')[0].linkedTo,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portControl'),
+    }));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
   }
 
-  exit_atomicObject(ctx) {
+  exit_circuitBreaker(ctx) {
 
   }
 }

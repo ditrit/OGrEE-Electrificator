@@ -6,6 +6,8 @@ import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
  * Template of plugin renderer.
  */
 class ElectrificatorRenderer extends DefaultRender {
+  defaultParent = 'stray';
+
   constructor(pluginData) {
     super(pluginData);
 
@@ -101,7 +103,10 @@ class ElectrificatorRenderer extends DefaultRender {
 
       const renderedFile = this.renderFileFromContext(ctx);
 
-      console.log(ctx.warnings);
+      if (ctx.warnings.length > 0) {
+        console.log(`Warnings for file ${path}:`);
+        console.log(ctx.warnings);
+      }
 
       files.push(new FileInput({
         path,
@@ -134,6 +139,9 @@ class ElectrificatorRenderer extends DefaultRender {
         break;
       case 'electricalLine':
         this.renderElectricalLine(ctx, currentComponent);
+        break;
+      case 'circuitBreaker':
+        this.renderCircuitBreaker(ctx, currentComponent);
         break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
@@ -187,17 +195,29 @@ class ElectrificatorRenderer extends DefaultRender {
       });
     }
 
+    ctx.rendered.containers.set(this.defaultParent, {
+      name: this.defaultParent,
+      parentId: null,
+      type: 'container',
+      attributes: {},
+      domain: 'general',
+      description: [],
+      objects: [],
+      links: [],
+      interfaces: [],
+    });
+
     ctx.rendered.devices.forEach((device) => {
       if (device.parentId === null) {
-        device.parentId = 'stray';
-        ctx.warnings.push(`Device ${device.name} has no parent: set to stray`);
+        device.parentId = this.defaultParent;
+        ctx.warnings.push(`Device ${device.name} has no parent: set to ${this.defaultParent}`);
         return;
       }
 
       const parent = ctx.rendered.containers.get(device.parentId);
       if (parent === undefined) {
-        ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to stray`);
-        device.parentId = 'stray';
+        ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to ${this.defaultParent}`);
+        device.parentId = this.defaultParent;
         return;
       }
 
@@ -206,15 +226,15 @@ class ElectrificatorRenderer extends DefaultRender {
 
     ctx.rendered.interfaces.forEach((inter) => {
       if (inter.parentId === null) {
-        inter.parentId = 'stray';
-        ctx.warnings.push(`Interface ${inter.name} has no parent: set to stray`);
+        inter.parentId = this.defaultParent;
+        ctx.warnings.push(`Interface ${inter.name} has no parent: set to ${this.defaultParent}`);
         return;
       }
 
       const parent = ctx.rendered.containers.get(inter.parentId);
       if (parent === undefined) {
-        ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to stray`);
-        inter.parentId = 'stray';
+        ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to ${this.defaultParent}`);
+        inter.parentId = this.defaultParent;
         return;
       }
 
@@ -223,15 +243,15 @@ class ElectrificatorRenderer extends DefaultRender {
 
     ctx.rendered.links.forEach((link) => {
       if (link.parentId === null) {
-        link.parentId = 'stray';
-        ctx.warnings.push(`Link ${link.name} has no parent: set to stray`);
+        link.parentId = this.defaultParent;
+        ctx.warnings.push(`Link ${link.name} has no parent: set to ${this.defaultParent}`);
         return;
       }
 
       const parent = ctx.rendered.containers.get(link.parentId);
       if (parent === undefined) {
-        ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to stray`);
-        link.parentId = 'stray';
+        ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to ${this.defaultParent}`);
+        link.parentId = this.defaultParent;
         return;
       }
 
@@ -274,7 +294,6 @@ class ElectrificatorRenderer extends DefaultRender {
       childrenToDelete.forEach((parentId) => {
         childrenMap.delete(parentId);
       });
-      console.log(JSON.stringify(childrenMap, this.replacer, 2));
     }
 
     // Render the root containers.
@@ -323,7 +342,7 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent Current component.
    */
   renderGenericDipole(ctx, currentComponent) {
-    let parent = 'root';
+    let parent = this.defaultParent;
     let portIn = null;
     let portOut = null;
     currentComponent?.attributes.forEach((attribute) => {
@@ -340,9 +359,8 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      attributes: {
-        type: 'genericDipole',
-      },
+      attributes: {},
+      type: currentComponent.definition.type,
       domain: 'electrical',
       category: 'device',
       parentId: parent,
@@ -350,6 +368,51 @@ class ElectrificatorRenderer extends DefaultRender {
       ports: {
         in: [
           { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render circuit breaker object.
+   *
+   * @param {object} ctx The context of the parsing.
+   * @param {Component} currentComponent Current component.
+   */
+  renderCircuitBreaker(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portIn = null;
+    let portOut = null;
+    let portControl = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parent') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portIn = attribute.value;
+      } else if (attribute.definition?.name === 'portOut') {
+        portOut = attribute.value;
+      } else if (attribute.definition?.name === 'portControl') {
+        portControl = attribute.value;
+      }
+    });
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes: {},
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+          { name: 'portControl', domain: 'control', linkedTo: portControl },
         ],
         out: [
           { name: 'portOut', domain: 'electrical', linkedTo: portOut },
@@ -385,9 +448,9 @@ class ElectrificatorRenderer extends DefaultRender {
     const contentDict = {
       name: currentComponent.id,
       parentId: parentObjectName,
-      type: 'container',
+      type: currentComponent.definition.type,
       attributes,
-      domain: 'electrical',
+      domain: 'general',
       description: currentComponent.definition.description,
       objects: [],
       links: [],
@@ -405,7 +468,7 @@ class ElectrificatorRenderer extends DefaultRender {
    */
 
   renderElectricalInterface(ctx, currentComponent) {
-    let parentId = 'stray';
+    let parentId = this.defaultParent;
     let role = null;
     let portIn = null;
     let portOut = null;
@@ -452,7 +515,7 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent Current component to be rendered
    */
   renderElectricalLine(ctx, currentComponent) {
-    let parentId = 'stray';
+    let parentId = this.defaultParent;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;

@@ -148,10 +148,13 @@ class ElectrificatorParser extends DefaultParser {
       });
       return;
     }
+    const context = {
+      current: srcObject,
+    };
 
     switch (srcObject.type) {
       case 'container':
-        listener.enter_Container({ current: srcObject });
+        listener.enter_Container(context);
         srcObject.objects?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
@@ -161,19 +164,19 @@ class ElectrificatorParser extends DefaultParser {
         srcObject.links?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
-        listener.exit_Container({ current: srcObject });
+        listener.exit_Container(context);
         break;
       case 'electrical_interface':
-        listener.enter_electricalInterface({ current: srcObject });
-        listener.exit_electricalInterface({ current: srcObject });
+        listener.enter_electricalInterface(context);
+        listener.exit_electricalInterface(context);
         break;
       case 'electrical_line':
-        listener.enter_electricalLine({ current: srcObject });
-        listener.exit_electricalLine({ current: srcObject });
+        listener.enter_electricalLine(context);
+        listener.exit_electricalLine(context);
         break;
-      case 'atomicObject':
-        listener.enter_atomicObject({ current: srcObject });
-        listener.exit_atomicObject({ current: srcObject });
+      case 'circuitBreaker':
+        listener.enter_circuitBreaker(context);
+        listener.exit_circuitBreaker(context);
         break;
       default:
         break;
