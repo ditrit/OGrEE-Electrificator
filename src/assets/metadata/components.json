@@ -93,7 +93,7 @@
         "required": true
       },
       {
-        "name": "in",
+        "name": "portIn",
         "displayName": "In",
         "type": "Link",
         "linkType": "Reverse",
@@ -101,7 +101,7 @@
         "required": false
       },
       {
-        "name": "out",
+        "name": "portOut",
         "displayName": "Out",
         "type": "Link",
         "linkType": "Default",

@@ -211,14 +211,14 @@ class ElectrificatorRenderer extends DefaultRender {
         return;
       }
 
-      const parent = ctx.rendered.devices.get(inter.parentId);
+      const parent = ctx.rendered.containers.get(inter.parentId);
       if (parent === undefined) {
         ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to stray`);
         inter.parentId = 'stray';
         return;
       }
 
-      parent.objects.push(inter);
+      parent.interfaces.push(inter);
     });
 
     ctx.rendered.links.forEach((link) => {
@@ -230,12 +230,12 @@ class ElectrificatorRenderer extends DefaultRender {
 
       const parent = ctx.rendered.containers.get(link.parentId);
       if (parent === undefined) {
-        ctx.warnings.push(`Link ${link.name} parent is invalid ${link.parentId}: set to stray`);
+        ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to stray`);
         link.parentId = 'stray';
         return;
       }
 
-      parent.objects.push(link);
+      parent.links.push(link);
     });
 
     const childrenMap = this.createContainerChildrenMap(ctx.rendered.containers);
@@ -405,8 +405,10 @@ class ElectrificatorRenderer extends DefaultRender {
    */
 
   renderElectricalInterface(ctx, currentComponent) {
-    let parentId = 'root';
+    let parentId = 'stray';
     let role = null;
+    let portIn = null;
+    let portOut = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
@@ -414,6 +416,10 @@ class ElectrificatorRenderer extends DefaultRender {
         parentId = attribute.value;
       } else if (attribute.definition?.name === 'role') {
         role = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portIn = attribute.value;
+      } else if (attribute.definition?.name === 'portOut') {
+        portOut = attribute.value;
       }
       return acc;
     }, {});
@@ -426,6 +432,14 @@ class ElectrificatorRenderer extends DefaultRender {
       role,
       domain: 'electrical',
       description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+        ],
+      },
     };
 
     ctx.rendered.interfaces.set(currentComponent.id, contentDict);
@@ -438,7 +452,7 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent Current component to be rendered
    */
   renderElectricalLine(ctx, currentComponent) {
-    let parentId = 'root';
+    let parentId = 'stray';
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
