@@ -90,7 +90,7 @@ class ElectrificatorListener {
     ));
   }
 
-  exit_Container(ctx) {
+  exit_Container() {
     this.components.push(this.containerStack.pop());
   }
 
@@ -135,12 +135,11 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_electricalInterface(ctx) {
+  exit_electricalInterface() {
 
   }
 
   enter_electricalLine(ctx) {
-    console.log('enter_electricalLine');
     const definition = this.definitions.find((def) => def.type === 'electricalLine');
 
     const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
@@ -174,7 +173,7 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_electricalLine(ctx) {
+  exit_electricalLine() {
 
   }
 
@@ -231,7 +230,7 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_circuitBreaker(ctx) {
+  exit_circuitBreaker() {
 
   }
 }

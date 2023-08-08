@@ -1,4 +1,4 @@
-import { Component, ComponentAttribute, DefaultParser } from 'leto-modelizer-plugin-core';
+import { DefaultParser } from 'leto-modelizer-plugin-core';
 import { ElectrificatorListener } from 'src/parser/ElectrificatorListener';
 
 /**
