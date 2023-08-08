@@ -94,14 +94,6 @@ class ElectrificatorListener {
     this.components.push(this.containerStack.pop());
   }
 
-  enter_Link(ctx) {
-
-  }
-
-  exit_Link(ctx) {
-
-  }
-
   enter_electricalInterface(ctx) {
     const definition = this.definitions.find((def) => def.type === 'electricalInterface');
 
@@ -144,6 +136,45 @@ class ElectrificatorListener {
   }
 
   exit_electricalInterface(ctx) {
+
+  }
+
+  enter_electricalLine(ctx) {
+    console.log('enter_electricalLine');
+    const definition = this.definitions.find((def) => def.type === 'electricalLine');
+
+    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
+      const attributeDefinition = definition.definedAttributes.find(
+        (attribute) => attribute.name === key,
+      );
+      acc.push(new ComponentAttribute({
+        name: key,
+        value,
+        type: 'string',
+        definition: attributeDefinition || null,
+      }));
+      return acc;
+    }, []);
+
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_electricalLine(ctx) {
 
   }
 

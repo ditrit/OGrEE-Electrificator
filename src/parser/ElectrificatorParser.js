@@ -155,10 +155,10 @@ class ElectrificatorParser extends DefaultParser {
         srcObject.objects?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
-        srcObject.links?.forEach((value) => {
+        srcObject.interfaces?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
-        srcObject.interfaces?.forEach((value) => {
+        srcObject.links?.forEach((value) => {
           this.parseObject(value, listener, path, prog);
         });
         listener.exit_Container({ current: srcObject });
@@ -167,9 +167,9 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_electricalInterface({ current: srcObject });
         listener.exit_electricalInterface({ current: srcObject });
         break;
-      case 'link':
-        listener.enter_Link({ current: srcObject });
-        listener.exit_Link({ current: srcObject });
+      case 'electrical_line':
+        listener.enter_electricalLine({ current: srcObject });
+        listener.exit_electricalLine({ current: srcObject });
         break;
       case 'atomicObject':
         listener.enter_atomicObject({ current: srcObject });

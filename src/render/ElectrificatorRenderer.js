@@ -1,7 +1,6 @@
 import nunjucks from 'nunjucks';
 import templates from 'src/render/ElectrificatorTemplate';
 import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
-import { number } from 'nunjucks/src/tests';
 
 /**
  * Template of plugin renderer.
@@ -120,6 +119,7 @@ class ElectrificatorRenderer extends DefaultRender {
         break;
       case 'electricalLine':
         this.renderElectricalLine(renderedComponentList, currentComponent);
+        break;
       default:
         break;
     }
@@ -166,6 +166,7 @@ class ElectrificatorRenderer extends DefaultRender {
       const parent = {
         type: 'container',
         name: parentObjectName,
+        attributes: {},
       };
       parent[parentField] = [contentDict];
       objectList.push(parent);
