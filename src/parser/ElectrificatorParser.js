@@ -166,11 +166,11 @@ class ElectrificatorParser extends DefaultParser {
         });
         listener.exit_Container(context);
         break;
-      case 'electrical_interface':
+      case 'electricalInterface':
         listener.enter_electricalInterface(context);
         listener.exit_electricalInterface(context);
         break;
-      case 'electrical_line':
+      case 'electricalLine':
         listener.enter_electricalLine(context);
         listener.exit_electricalLine(context);
         break;

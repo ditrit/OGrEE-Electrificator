@@ -489,7 +489,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      type: 'electrical_interface',
+      type: currentComponent.definition.type,
       parentId,
       attributes,
       role,
@@ -527,7 +527,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      type: 'electrical_line',
+      type: currentComponent.definition.type,
       parentId,
       attributes,
       domain: 'electrical',
