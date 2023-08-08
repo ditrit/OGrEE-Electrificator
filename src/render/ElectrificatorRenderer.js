@@ -67,9 +67,6 @@ class ElectrificatorRenderer extends DefaultRender {
    */
   generateFilesFromComponentsMap(map, parentEventId) {
     const files = [];
-    const parsedComponents = [];
-
-    console.log(map);
 
     map.forEach((components, path) => {
       const id = this.pluginData.emitEvent({
@@ -82,16 +79,34 @@ class ElectrificatorRenderer extends DefaultRender {
           global: false,
         },
       });
+      const ctx = {
+        rendered: {
+          links: new Map(),
+          devices: new Map(),
+          interfaces: new Map(),
+          containers: new Map(),
+        },
+        partiallyRendered: {
+          links: new Map(),
+          devices: new Map(),
+          interfaces: new Map(),
+          containers: new Map(),
+        },
+        warnings: [],
+      };
+
       components.forEach((component) => {
-        this.parseComponent(parsedComponents, component);
+        this.parseComponent(ctx, component);
       });
-      console.log('parsedComponents: ');
-      console.log(parsedComponents);
-      const generatedContentFromParsedComponents = JSON.stringify(parsedComponents, null, 2);
+
+      const renderedFile = this.renderFileFromContext(ctx);
+
+      console.log(ctx.warnings);
+
       files.push(new FileInput({
         path,
         // content: `${this.template.render({ components }).trim()}\n`,
-        content: generatedContentFromParsedComponents,
+        content: renderedFile,
       }));
 
       this.pluginData.emitEvent({ id, status: 'success' });
@@ -103,83 +118,226 @@ class ElectrificatorRenderer extends DefaultRender {
   /**
    * Append content dict to container objects.
    *
-   * @param {object[]} renderedComponentList - List of components.
+   * @param {object} ctx - The context of the parsing.
    * @param {Component} currentComponent - Current component.
    */
-  parseComponent(renderedComponentList, currentComponent) {
+  parseComponent(ctx, currentComponent) {
     switch (currentComponent?.definition.type) {
       case 'container':
-        this.renderContainerObject(renderedComponentList, currentComponent);
+        this.renderContainerObject(ctx, currentComponent);
         break;
       case 'electricalInterface':
-        this.renderElectricalInterface(renderedComponentList, currentComponent);
+        this.renderElectricalInterface(ctx, currentComponent);
         break;
       case 'genericDipole':
-        this.renderGenericDipole(renderedComponentList, currentComponent);
+        this.renderGenericDipole(ctx, currentComponent);
         break;
       case 'electricalLine':
-        this.renderElectricalLine(renderedComponentList, currentComponent);
+        this.renderElectricalLine(ctx, currentComponent);
         break;
       default:
+        ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
     }
   }
 
   /**
-   * Get object from list by name.
+   * For debug, render a map.
    *
-   * @param {object[]} objectList  List of objects
-   * @param {string} name Name of the object to be found
-   * @returns {null|object} Object with the name
+   * @param {string} key The object key.
+   * @param {any} value The object value.
+   * @returns {any} The value.
    */
-  getObjectFromListByName(objectList, name) {
-    return objectList.reduce((acc, object) => {
-      if (acc) {
-        return acc;
-      } if (object.name === name) {
-        return object;
-      }
-      return null;
-    }, null);
+  replacer(key, value) {
+    if (value instanceof Map) {
+      return {
+        dataType: 'Map',
+        value: Array.from(value.entries()), // or with spread: value: [...value]
+      };
+    }
+    return value;
   }
 
   /**
-   * Append contentDict to the objects field of the object with the name
-   * parentObjectName in the objectList.
-   * If the object with the name parentObjectName does not exist in the objectList, it is created.
+   * Render an object in hierarchical form from the rendered objects.
    *
-   * @param {object[]} objectList List of objects
-   * @param {string} parentObjectName  Name of the object to which the contentDict is to be appended
-   * @param {string} parentField Name of the field in the object to which
-   * the contentDict is to be appended
-   * @param {object} contentDict Content to be appended
+   * @param {object} ctx The context of the parsing.
+   * @returns {string} The rendered file.
    */
-  appendContentDictToContainer(objectList, parentObjectName, parentField, contentDict) {
-    const containerObject = this.getObjectFromListByName(objectList, parentObjectName);
-    if (containerObject) {
-      if (!containerObject[parentField]) {
-        containerObject[parentField] = [contentDict];
-      } else {
-        containerObject[parentField].push(contentDict);
-      }
-    } else {
-      const parent = {
-        type: 'container',
-        name: parentObjectName,
-        attributes: {},
-      };
-      parent[parentField] = [contentDict];
-      objectList.push(parent);
+  renderFileFromContext(ctx) {
+    // TODO: Maybe clone the object to avoid side effects ?
+    if (ctx.partiallyRendered.containers.size > 0) {
+      ctx.partiallyRendered.containers.forEach((container) => {
+        ctx.warnings.push(`Container ${container.name} is not fully rendered`);
+      });
     }
+    if (ctx.partiallyRendered.interfaces.size > 0) {
+      ctx.partiallyRendered.interfaces.forEach((inter) => {
+        ctx.warnings.push(`Interface ${inter.name} is not fully rendered`);
+      });
+    }
+    if (ctx.partiallyRendered.devices.size > 0) {
+      ctx.partiallyRendered.devices.forEach((device) => {
+        ctx.warnings.push(`Device ${device.name} is not fully rendered`);
+      });
+    }
+    if (ctx.partiallyRendered.links.size > 0) {
+      ctx.partiallyRendered.links.forEach((link) => {
+        ctx.warnings.push(`Link ${link.name} is not fully rendered`);
+      });
+    }
+
+    ctx.rendered.devices.forEach((device) => {
+      if (device.parentId === null) {
+        device.parentId = 'stray';
+        ctx.warnings.push(`Device ${device.name} has no parent: set to stray`);
+        return;
+      }
+
+      const parent = ctx.rendered.containers.get(device.parentId);
+      if (parent === undefined) {
+        ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to stray`);
+        device.parentId = 'stray';
+        return;
+      }
+
+      parent.objects.push(device);
+    });
+
+    ctx.rendered.interfaces.forEach((inter) => {
+      if (inter.parentId === null) {
+        inter.parentId = 'stray';
+        ctx.warnings.push(`Interface ${inter.name} has no parent: set to stray`);
+        return;
+      }
+
+      const parent = ctx.rendered.devices.get(inter.parentId);
+      if (parent === undefined) {
+        ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to stray`);
+        inter.parentId = 'stray';
+        return;
+      }
+
+      parent.objects.push(inter);
+    });
+
+    ctx.rendered.links.forEach((link) => {
+      if (link.parentId === null) {
+        link.parentId = 'stray';
+        ctx.warnings.push(`Link ${link.name} has no parent: set to stray`);
+        return;
+      }
+
+      const parent = ctx.rendered.containers.get(link.parentId);
+      if (parent === undefined) {
+        ctx.warnings.push(`Link ${link.name} parent is invalid ${link.parentId}: set to stray`);
+        link.parentId = 'stray';
+        return;
+      }
+
+      parent.objects.push(link);
+    });
+
+    const childrenMap = this.createContainerChildrenMap(ctx.rendered.containers);
+
+    let done = false;
+    while (!done) {
+      done = true;
+      const childrenToDelete = [];
+      childrenMap.forEach((children, parentId) => {
+        if (children.size === 0) {
+          return;
+        }
+        const toDelete = [];
+        children.forEach((child) => {
+          // The child is in the map, it means it also has children of its own,
+          // do not render it yet.
+          if (childrenMap.has(child.name)) {
+            return;
+          }
+
+          // The child is not in the map, it means it has no children, render it.
+          const parent = ctx.rendered.containers.get(parentId);
+          parent.objects.push(child);
+          toDelete.push(child.name);
+        });
+        // Remove rendered children from the map.
+        toDelete.forEach((name) => {
+          children.splice(children.indexOf(name), 1);
+          if (children.length === 0) {
+            childrenToDelete.push(parentId);
+          }
+          done = false;
+        });
+      });
+      // Remove rendered parents from the map.
+      childrenToDelete.forEach((parentId) => {
+        childrenMap.delete(parentId);
+      });
+      console.log(JSON.stringify(childrenMap, this.replacer, 2));
+    }
+
+    // Render the root containers.
+    const rootContainers = [];
+    ctx.rendered.containers.forEach((container) => {
+      if (container.parentId === null) {
+        rootContainers.push(container);
+      }
+    });
+
+    return JSON.stringify(rootContainers, null, 2);
   }
 
-  renderGenericDipole(renderedComponentList, currentComponent) {
+  /**
+   * Create a Map of the children of each container.
+   * If a container has no parent, it is set as a root container.
+   * If a container has no children, it is not in the map.
+   *
+   * @param {Map<string, object>} containerMap List of containers
+   * @returns {Map<string,object>} Map of the children of each container
+   */
+  createContainerChildrenMap(containerMap) {
+    const childrenMap = new Map();
+    containerMap.forEach((container) => {
+      if (container.parentId === null) {
+        if (!childrenMap.has(container.name)) {
+          childrenMap.set(container.name, []);
+        }
+        return;
+      }
+
+      const parent = childrenMap.get(container.parentId);
+      if (parent) {
+        parent.push(container);
+      } else {
+        childrenMap.set(container.parentId, [container]);
+      }
+    });
+    return childrenMap;
+  }
+
+  /**
+   * Render container object.
+   *
+   * @param {object} ctx The context of the parsing.
+   * @param {Component} currentComponent Current component.
+   */
+  renderGenericDipole(ctx, currentComponent) {
     let parent = 'root';
+    let portIn = null;
+    let portOut = null;
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parent') {
         parent = attribute.value;
       }
+      if (attribute.definition?.name === 'portIn') {
+        portIn = attribute.value;
+      }
+      if (attribute.definition?.name === 'portOut') {
+        portOut = attribute.value;
+      }
     });
+
     const contentDict = {
       name: currentComponent.id,
       attributes: {
@@ -187,22 +345,28 @@ class ElectrificatorRenderer extends DefaultRender {
       },
       domain: 'electrical',
       category: 'device',
+      parentId: parent,
       description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+        ],
+      },
     };
 
-    this.appendContentDictToContainer(renderedComponentList, parent, 'objects', contentDict);
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
   }
 
   /**
    * Append contentDict to the objects field of the object with the name
    *
-   * @param {object[]} renderedComponentList List of objects
+   * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Content to be appended
    */
-  renderContainerObject(
-    renderedComponentList,
-    currentComponent,
-  ) {
+  renderContainerObject(ctx, currentComponent) {
     let parentObjectName = null;
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parent' || attribute.definition?.name === 'parentContainer'
@@ -218,46 +382,29 @@ class ElectrificatorRenderer extends DefaultRender {
       return acc;
     }, {});
 
-    let contentDict = {
+    const contentDict = {
       name: currentComponent.id,
       parentId: parentObjectName,
       type: 'container',
       attributes,
       domain: 'electrical',
-      category: 'electrical_device',
       description: currentComponent.definition.description,
       objects: [],
       links: [],
       interfaces: [],
     };
 
-    const currentObject = this.getObjectFromListByName(renderedComponentList, currentComponent.id);
-    // The current object already exists in the list,
-    // we have to remove it from the list and add it to the parent object
-    if (currentObject) {
-      renderedComponentList.splice(renderedComponentList.indexOf(currentObject), 1);
-      contentDict = {
-        ...contentDict,
-        ...currentObject,
-      };
-    }
-
-    const parentObject = this.getObjectFromListByName(renderedComponentList, parentObjectName);
-    if (parentObject) {
-      parentObject.objects.push(contentDict);
-    } else {
-      renderedComponentList.push(contentDict);
-    }
+    ctx.rendered.containers.set(currentComponent.id, contentDict);
   }
 
   /**
    * Render interfaces in a specified format and add it to the object list.
    *
-   * @param {object[]} renderedComponentList List of components that have already been rendered
+   * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component to be rendered
    */
 
-  renderElectricalInterface(renderedComponentList, currentComponent) {
+  renderElectricalInterface(ctx, currentComponent) {
     let parentId = 'root';
     let role = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
@@ -281,16 +428,16 @@ class ElectrificatorRenderer extends DefaultRender {
       description: currentComponent.definition.description,
     };
 
-    this.appendContentDictToContainer(renderedComponentList, parentId, 'interfaces', contentDict);
+    ctx.rendered.interfaces.set(currentComponent.id, contentDict);
   }
 
   /**
    * Render links in a specified format and add it to the object list.
    *
-   * @param {object[] } renderedComponentList List of components that have already been rendered
-   * @param { Component} currentComponent Current component to be rendered
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component to be rendered
    */
-  renderElectricalLine(renderedComponentList, currentComponent) {
+  renderElectricalLine(ctx, currentComponent) {
     let parentId = 'root';
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
@@ -311,7 +458,7 @@ class ElectrificatorRenderer extends DefaultRender {
       ports: { in: [], out: [] },
     };
 
-    this.appendContentDictToContainer(renderedComponentList, parentId, 'links', contentDict);
+    ctx.rendered.links.set(currentComponent.id, contentDict);
   }
 }
 
