@@ -178,6 +178,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_circuitBreaker(context);
         listener.exit_circuitBreaker(context);
         break;
+      case 'externalDevice':
+        listener.enter_externalDevice(context);
+        listener.exit_externalDevice(context);
+        break;
       default:
         break;
     }

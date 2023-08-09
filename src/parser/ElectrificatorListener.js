@@ -230,7 +230,51 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_circuitBreaker() {
+  exit_circuitBreaker() {}
+
+  enter_externalDevice(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+
+    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
+      const attributeDefinition = definition.definedAttributes.find(
+        (attribute) => attribute.name === key,
+      );
+      acc.push(new ComponentAttribute({
+        name: key,
+        value,
+        type: 'string',
+        definition: attributeDefinition || null,
+      }));
+      return acc;
+    }, []);
+
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+
+    const portName = 'portIn';
+    attributes.push(new ComponentAttribute({
+      name: portName,
+      value: ctx.current.ports.in.find((port) => port.name === portName).linkedTo,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === portName),
+    }));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_externalDevice() {
 
   }
 }

@@ -143,6 +143,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'circuitBreaker':
         this.renderCircuitBreaker(ctx, currentComponent);
         break;
+      case 'externalDevice':
+        this.renderExternalDevice(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -633,6 +636,46 @@ class ElectrificatorRenderer extends DefaultRender {
     };
 
     ctx.rendered.links.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render devices in a specified format and add it to the object list.
+   *
+   * @param ctx The parsing context.
+   * @param currentComponent Current component to be rendered (external device)
+   */
+  renderExternalDevice(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInLine = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = attribute.value ? attribute.value[0] : null;
+      }
+    });
+
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes: {},
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+        ],
+        out: [],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
   }
 }
 
