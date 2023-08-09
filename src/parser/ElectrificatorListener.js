@@ -89,6 +89,9 @@ class ElectrificatorListener {
   restorePorts(ports, componentDefinition) {
     const portList = [];
 
+    // TODO: is "Array" the right type? Should it be "Link" ?
+    // Currently, copied from the jobs of githubator
+
     ports.in?.forEach((port) => {
       portList.push(new ComponentAttribute({
         name: port.name,

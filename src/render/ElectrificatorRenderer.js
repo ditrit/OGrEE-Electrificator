@@ -339,6 +339,31 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
+   * Work around for the fact that the value of an object can sometime be a string or an array.
+   * Is it a bug in the renderer, the parser or Leto ? I don't know.
+   *
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component.
+   * @param {string|Array|null} linkValue The value of the link attribute
+   * @returns {string|null} The name of the link
+   */
+  getLinkName(ctx, currentComponent, linkValue) {
+    if (linkValue === null) {
+      return null;
+    }
+
+    if (Object.prototype.toString.call(linkValue) === '[object String]') {
+      return linkValue;
+    }
+
+    if (Object.prototype.toString.call(linkValue) === '[object Array]') {
+      return linkValue[0];
+    }
+    ctx.warnings.push(`Link value is invalid: "${linkValue}" for "${currentComponent.id}"`);
+    return null;
+  }
+
+  /**
    * Render container object.
    *
    * @param {object} ctx The context of the parsing.
@@ -396,11 +421,11 @@ class ElectrificatorRenderer extends DefaultRender {
       if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portInLine = attribute.value ? attribute.value[0] : null;
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
-        portOutLine = attribute.value ? attribute.value[0] : null;
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portControl') {
-        portControlLine = attribute.value ? attribute.value[0] : null;
+        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       }
     });
 
@@ -572,9 +597,9 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'role') {
         role = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portIn = attribute.value ? attribute.value[0] : null;
+        portIn = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
-        portOut = attribute.value ? attribute.value[0] : null;
+        portOut = this.getLinkName(ctx, currentComponent, attribute.value);
       }
       return acc;
     }, {});
@@ -641,8 +666,8 @@ class ElectrificatorRenderer extends DefaultRender {
   /**
    * Render devices in a specified format and add it to the object list.
    *
-   * @param ctx The parsing context.
-   * @param currentComponent Current component to be rendered (external device)
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component to be rendered (external device)
    */
   renderExternalDevice(ctx, currentComponent) {
     let parent = this.defaultParent;
@@ -651,7 +676,7 @@ class ElectrificatorRenderer extends DefaultRender {
       if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portInLine = attribute.value ? attribute.value[0] : null;
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       }
     });
 
