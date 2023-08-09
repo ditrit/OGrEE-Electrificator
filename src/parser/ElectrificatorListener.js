@@ -56,22 +56,32 @@ class ElectrificatorListener {
     });
   }
 
+  /**
+   * Restore attributes from json file. If attribute is not defined in component definition, it will
+   * be added as a string attribute.
+   *
+   * @param {object} attributes - Attributes from json file.
+   * @param {ComponentDefinition} componentDefinition - Component definition.
+   * @returns {ComponentAttribute[]} Restored attributes.
+   */
+  restoreAttributes(attributes, componentDefinition) {
+    return Object.entries(attributes).reduce((acc, [key, value]) => {
+      const attributeDefinition = componentDefinition.definedAttributes.find(
+        (attribute) => attribute.name === key,
+      );
+      acc.push(new ComponentAttribute({
+        name: key,
+        value,
+        type: 'string',
+        definition: attributeDefinition || null,
+      }));
+      return acc;
+    }, []);
+  }
+
   enter_Container(ctx) {
-    const definition = this.definitions.find(
-      (def) => def.type === 'container',
-    );
-    const attributes = Object.entries(ctx.current.attributes).reduce(
-      (acc, [key, value]) => {
-        acc.push(new ComponentAttribute({
-          name: key,
-          value,
-          type: 'string',
-          definition: null,
-        }));
-        return acc;
-      },
-      [],
-    );
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
 
     // Check if there is a parent container in the stack.
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
@@ -95,20 +105,8 @@ class ElectrificatorListener {
   }
 
   enter_electricalInterface(ctx) {
-    const definition = this.definitions.find((def) => def.type === 'electricalInterface');
-
-    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
-      const attributeDefinition = definition.definedAttributes.find(
-        (attribute) => attribute.name === key,
-      );
-      acc.push(new ComponentAttribute({
-        name: key,
-        value,
-        type: 'string',
-        definition: attributeDefinition || null,
-      }));
-      return acc;
-    }, []);
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -140,20 +138,8 @@ class ElectrificatorListener {
   }
 
   enter_electricalLine(ctx) {
-    const definition = this.definitions.find((def) => def.type === 'electricalLine');
-
-    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
-      const attributeDefinition = definition.definedAttributes.find(
-        (attribute) => attribute.name === key,
-      );
-      acc.push(new ComponentAttribute({
-        name: key,
-        value,
-        type: 'string',
-        definition: attributeDefinition || null,
-      }));
-      return acc;
-    }, []);
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -178,20 +164,8 @@ class ElectrificatorListener {
   }
 
   enter_circuitBreaker(ctx) {
-    const definition = this.definitions.find((def) => def.type === 'circuitBreaker');
-
-    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
-      const attributeDefinition = definition.definedAttributes.find(
-        (attribute) => attribute.name === key,
-      );
-      acc.push(new ComponentAttribute({
-        name: key,
-        value,
-        type: 'string',
-        definition: attributeDefinition || null,
-      }));
-      return acc;
-    }, []);
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -234,19 +208,7 @@ class ElectrificatorListener {
 
   enter_externalDevice(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
-
-    const attributes = Object.entries(ctx.current.attributes).reduce((acc, [key, value]) => {
-      const attributeDefinition = definition.definedAttributes.find(
-        (attribute) => attribute.name === key,
-      );
-      acc.push(new ComponentAttribute({
-        name: key,
-        value,
-        type: 'string',
-        definition: attributeDefinition || null,
-      }));
-      return acc;
-    }, []);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -274,9 +236,7 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_externalDevice() {
-
-  }
+  exit_externalDevice() {}
 }
 
 export { ElectrificatorListener };
