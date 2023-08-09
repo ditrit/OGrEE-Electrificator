@@ -9,7 +9,7 @@ class ElectrificatorConfiguration extends DefaultConfiguration {
    *
    * @param {object} [props] - Object that contains all properties to set.
    */
-  constructor(props) {
+  constructor(props = { editor: null }) {
     super({
       ...props,
       editor: {
