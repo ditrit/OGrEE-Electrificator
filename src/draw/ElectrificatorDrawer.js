@@ -8,9 +8,13 @@ import { DefaultDrawer } from 'leto-modelizer-plugin-core';
  * Only the function draw is called by Leto-Modelizer with the id of the canvas and all the components to draw.
  */
 class ElectrificatorDrawer extends DefaultDrawer {
-  constructor(props) {
-    super(props);
-    // Set your custom properties here
+  constructor(pluginData, resources, rootId, options) {
+    super(pluginData, resources, rootId, {
+      ...options,
+      minHeight: 80,
+      minWidth: 110,
+      margin: 5,
+    });
   }
 }
 
