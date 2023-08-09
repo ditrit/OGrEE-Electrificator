@@ -79,6 +79,40 @@ class ElectrificatorListener {
     }, []);
   }
 
+  /**
+   * Restore ports from json file.
+   *
+   * @param {object} ports - Ports from json file.
+   * @param {ComponentDefinition} componentDefinition - Component definition.
+   * @returns {ComponentAttribute[]} Restored ports.
+   */
+  restorePorts(ports, componentDefinition) {
+    const portList = [];
+
+    ports.in?.forEach((port) => {
+      portList.push(new ComponentAttribute({
+        name: port.name,
+        value: port.linkedTo,
+        type: 'Array',
+        definition: componentDefinition.definedAttributes.find(
+          (attribute) => attribute.name === port.name,
+        ),
+      }));
+    });
+
+    ports.out?.forEach((port) => {
+      portList.push(new ComponentAttribute({
+        name: port.name,
+        value: [port.linkedTo],
+        type: 'Array',
+        definition: componentDefinition.definedAttributes.find(
+          (attribute) => attribute.name === port.name,
+        ),
+      }));
+    });
+    return portList;
+  }
+
   enter_Container(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);
@@ -165,7 +199,8 @@ class ElectrificatorListener {
 
   enter_circuitBreaker(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -176,25 +211,6 @@ class ElectrificatorListener {
         definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
       }));
     }
-
-    attributes.push(new ComponentAttribute({
-      name: 'portIn',
-      value: ctx.current.ports.in.filter((port) => port.name === 'portIn')[0].linkedTo,
-      type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portIn'),
-    }));
-    attributes.push(new ComponentAttribute({
-      name: 'portOut',
-      value: ctx.current.ports.out.filter((port) => port.name === 'portOut')[0].linkedTo,
-      type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portOut'),
-    }));
-    attributes.push(new ComponentAttribute({
-      name: 'portControl',
-      value: ctx.current.ports.in.filter((port) => port.name === 'portControl')[0].linkedTo,
-      type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === 'portControl'),
-    }));
 
     const component = this.createComponent(
       ctx.current.name,
@@ -208,7 +224,8 @@ class ElectrificatorListener {
 
   enter_externalDevice(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
 
     const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
     if (parent) {
@@ -219,14 +236,6 @@ class ElectrificatorListener {
         definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
       }));
     }
-
-    const portName = 'portIn';
-    attributes.push(new ComponentAttribute({
-      name: portName,
-      value: ctx.current.ports.in.find((port) => port.name === portName).linkedTo,
-      type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === portName),
-    }));
 
     const component = this.createComponent(
       ctx.current.name,
