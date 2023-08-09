@@ -386,18 +386,18 @@ class ElectrificatorRenderer extends DefaultRender {
    */
   renderCircuitBreaker(ctx, currentComponent) {
     let parent = this.defaultParent;
-    let portIn = null;
-    let portOut = null;
-    let portControl = null;
+    let portInLine = null;
+    let portOutLine = null;
+    let portControlLine = null;
     currentComponent?.attributes.forEach((attribute) => {
-      if (attribute.definition?.name === 'parent') {
+      if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portIn = attribute.value;
+        portInLine = attribute.value ? attribute.value[0] : null;
       } else if (attribute.definition?.name === 'portOut') {
-        portOut = attribute.value;
+        portOutLine = attribute.value ? attribute.value[0] : null;
       } else if (attribute.definition?.name === 'portControl') {
-        portControl = attribute.value;
+        portControlLine = attribute.value ? attribute.value[0] : null;
       }
     });
 
@@ -411,16 +411,105 @@ class ElectrificatorRenderer extends DefaultRender {
       description: currentComponent.definition.description,
       ports: {
         in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
-          { name: 'portControl', domain: 'control', linkedTo: portControl },
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+          { name: 'portControl', domain: 'control', linkedTo: portControlLine },
         ],
         out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
         ],
       },
     };
 
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+    if (portControlLine !== null) {
+      this.makeConnectionInput(ctx, portControlLine, currentComponent.id, 'portControl', 'control');
+    }
+
     ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Connects an input of a component to a line.
+   * If the line has been rendered, the connection is added to the line.
+   * If the line has not been rendered, the connection is added to the partially rendered line
+   * (that will be created if necessary).
+   *
+   *
+   * @param {object} ctx The parsing context.
+   * @param {string} lineName The name of the line that is connected.
+   * @param {string} componentName The name of the component that is connected.
+   * @param {string} portName The name of the component port.
+   * @param {string} portType The type of the component (device/interface).
+   */
+  makeConnectionInput(ctx, lineName, componentName, portName, portType) {
+    const connection = {
+      type: portType,
+      name: componentName,
+      port: portName,
+    };
+    const renderedLine = ctx.rendered.links.get(lineName);
+    if (renderedLine !== undefined) {
+      renderedLine.ports.out.push(connection);
+      return;
+    }
+
+    const partiallyRenderedLine = ctx.partiallyRendered.links.get(lineName);
+    if (partiallyRenderedLine !== undefined) {
+      partiallyRenderedLine.ports.out.push(connection);
+      return;
+    }
+
+    ctx.partiallyRendered.links.set(lineName, {
+      name: lineName,
+      ports: {
+        in: [],
+        out: [connection],
+      },
+    });
+  }
+
+  /**
+   * Connects an output of a component to a line.
+   * If the line has been rendered, the connection is added to the line.
+   * If the line has not been rendered, the connection is added to the partially rendered line
+   * (that will be created if necessary).
+   *
+   *
+   * @param {object} ctx The parsing context.
+   * @param {string} lineName The name of the line that is connected.
+   * @param {string} componentName The name of the component that is connected.
+   * @param {string} portName The name of the component port.
+   * @param {string} portType The type of the component (device/interface).
+   */
+  makeConnectionOutput(ctx, lineName, componentName, portName, portType) {
+    const connection = {
+      type: portType,
+      name: componentName,
+      port: portName,
+    };
+    const renderedLine = ctx.rendered.links.get(lineName);
+    if (renderedLine !== undefined) {
+      renderedLine.ports.in.push(connection);
+      return;
+    }
+    const partiallyRenderedLine = ctx.partiallyRendered.links.get(lineName);
+    if (partiallyRenderedLine !== undefined) {
+      partiallyRenderedLine.ports.in.push(connection);
+      return;
+    }
+
+    ctx.partiallyRendered.links.set(lineName, {
+      name: lineName,
+      ports: {
+        in: [connection],
+        out: [],
+      },
+    });
   }
 
   /**
@@ -480,9 +569,9 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'role') {
         role = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portIn = attribute.value;
+        portIn = attribute.value ? attribute.value[0] : null;
       } else if (attribute.definition?.name === 'portOut') {
-        portOut = attribute.value;
+        portOut = attribute.value ? attribute.value[0] : null;
       }
       return acc;
     }, {});
@@ -515,6 +604,7 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {Component} currentComponent Current component to be rendered
    */
   renderElectricalLine(ctx, currentComponent) {
+    // Look for the parent container and serialise the attributes
     let parentId = this.defaultParent;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
@@ -525,6 +615,13 @@ class ElectrificatorRenderer extends DefaultRender {
       return acc;
     }, {});
 
+    // Get the input and output ports from the partially rendered line
+    // and delete the partially rendered line
+    const partiallyRendered = ctx.partiallyRendered.links.get(currentComponent.id);
+    const input = partiallyRendered?.ports?.in ?? [];
+    const output = partiallyRendered?.ports?.out ?? [];
+    ctx.partiallyRendered.links.delete(currentComponent.id);
+
     const contentDict = {
       name: currentComponent.id,
       type: currentComponent.definition.type,
@@ -532,7 +629,7 @@ class ElectrificatorRenderer extends DefaultRender {
       attributes,
       domain: 'electrical',
       description: currentComponent.definition.description,
-      ports: { in: [], out: [] },
+      ports: { in: input, out: output },
     };
 
     ctx.rendered.links.set(currentComponent.id, contentDict);
