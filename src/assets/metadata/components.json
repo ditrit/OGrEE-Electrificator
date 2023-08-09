@@ -173,7 +173,7 @@
     "type": "circuitBreaker",
     "model": "DefaultModel",
     "displayName": "Circuit Breaker",
-    "icon": "ResistorIcon",
+    "icon": "CircuitBreakerIcon",
     "parentTypes": [
         "container"
         ],
