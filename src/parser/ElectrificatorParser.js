@@ -74,7 +74,6 @@ class ElectrificatorParser extends DefaultParser {
 
       return false;
     }).forEach((input) => {
-      console.log(`reading file ${input.path}`);
       const id = this.pluginData.emitEvent({
         parent: parentEventId,
         type: 'Parser',
@@ -129,7 +128,6 @@ class ElectrificatorParser extends DefaultParser {
     } else {
       this.parseObject(data, listener, path, prog);
     }
-    console.log(`parsed ${path}`);
   }
 
   /**
