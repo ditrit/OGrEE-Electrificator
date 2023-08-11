@@ -280,7 +280,7 @@
     "type": "externalDevice",
     "model": "DefaultModel",
     "displayName": "External Component",
-    "icon": "DefaultIcon",
+    "icon": "ExternalDeviceIcon",
     "parentTypes": [
         "container"
         ],
