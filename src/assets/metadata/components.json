@@ -207,6 +207,18 @@
         "type": "Link",
         "linkType": "Reverse",
         "linkRef": "controlLine"
+      },
+      {
+        "name": "model",
+        "displayName": "Model",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "breakingPower",
+        "displayName": "Breaking Power",
+        "type": "String",
+        "required": false
       }
     ]
   },

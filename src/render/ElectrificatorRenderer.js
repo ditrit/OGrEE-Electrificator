@@ -28,7 +28,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Convert all provided components and links in terraform files.
-   *
    * @param {string} [parentEventId] - Parent event id.
    * @returns {FileInput[]} Array of generated files from components and links.
    */
@@ -62,7 +61,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render files from related components.
-   *
    * @param {Map<string,Component[]>} map - Components mapped by file name.
    * @param {string} parentEventId - Parent event id.
    * @returns {FileInput[]} Render files array.
@@ -122,7 +120,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Append content dict to container objects.
-   *
    * @param {object} ctx - The context of the parsing.
    * @param {Component} currentComponent - Current component.
    */
@@ -154,7 +151,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * For debug, render a map.
-   *
    * @param {string} key The object key.
    * @param {any} value The object value.
    * @returns {any} The value.
@@ -171,7 +167,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render an object in hierarchical form from the rendered objects.
-   *
    * @param {object} ctx The context of the parsing.
    * @returns {string} The rendered file.
    */
@@ -314,7 +309,6 @@ class ElectrificatorRenderer extends DefaultRender {
    * Create a Map of the children of each container.
    * If a container has no parent, it is set as a root container.
    * If a container has no children, it is not in the map.
-   *
    * @param {Map<string, object>} containerMap List of containers
    * @returns {Map<string,object>} Map of the children of each container
    */
@@ -341,7 +335,6 @@ class ElectrificatorRenderer extends DefaultRender {
   /**
    * Work around for the fact that the value of an object can sometime be a string or an array.
    * Is it a bug in the renderer, the parser or Leto ? I don't know.
-   *
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component.
    * @param {string|Array|null} linkValue The value of the link attribute
@@ -365,7 +358,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render container object.
-   *
    * @param {object} ctx The context of the parsing.
    * @param {Component} currentComponent Current component.
    */
@@ -408,7 +400,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render circuit breaker object.
-   *
    * @param {object} ctx The context of the parsing.
    * @param {Component} currentComponent Current component.
    */
@@ -417,6 +408,7 @@ class ElectrificatorRenderer extends DefaultRender {
     let portInLine = null;
     let portOutLine = null;
     let portControlLine = null;
+    const attributes = {};
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
@@ -426,12 +418,14 @@ class ElectrificatorRenderer extends DefaultRender {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
     const contentDict = {
       name: currentComponent.id,
-      attributes: {},
+      attributes,
       type: currentComponent.definition.type,
       domain: 'electrical',
       category: 'device',
@@ -466,8 +460,6 @@ class ElectrificatorRenderer extends DefaultRender {
    * If the line has been rendered, the connection is added to the line.
    * If the line has not been rendered, the connection is added to the partially rendered line
    * (that will be created if necessary).
-   *
-   *
    * @param {object} ctx The parsing context.
    * @param {string} lineName The name of the line that is connected.
    * @param {string} componentName The name of the component that is connected.
@@ -506,8 +498,6 @@ class ElectrificatorRenderer extends DefaultRender {
    * If the line has been rendered, the connection is added to the line.
    * If the line has not been rendered, the connection is added to the partially rendered line
    * (that will be created if necessary).
-   *
-   *
    * @param {object} ctx The parsing context.
    * @param {string} lineName The name of the line that is connected.
    * @param {string} componentName The name of the component that is connected.
@@ -542,7 +532,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Append contentDict to the objects field of the object with the name
-   *
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Content to be appended
    */
@@ -579,7 +568,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render interfaces in a specified format and add it to the object list.
-   *
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component to be rendered
    */
@@ -627,7 +615,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render links in a specified format and add it to the object list.
-   *
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component to be rendered
    */
@@ -665,7 +652,6 @@ class ElectrificatorRenderer extends DefaultRender {
 
   /**
    * Render devices in a specified format and add it to the object list.
-   *
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component to be rendered (external device)
    */
