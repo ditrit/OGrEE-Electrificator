@@ -19,7 +19,6 @@ class ElectrificatorParser extends DefaultParser {
 
   /**
    * Get the list of model paths from all files.
-   *
    * @param {FileInformation[]} [files] - List of files.
    * @returns {string[]} List of folder paths that represent a model.
    */
@@ -38,7 +37,6 @@ class ElectrificatorParser extends DefaultParser {
 
   /**
    * Convert the content of files into Components.
-   *
    * @param {FileInformation} diagram - Diagram file information.
    * @param {FileInput[]} [inputs] - Data you want to parse.
    * @param {string} [parentEventId] - Parent event id.
@@ -112,7 +110,6 @@ class ElectrificatorParser extends DefaultParser {
 
   /**
    * Parse a file.
-   *
    * @param {string} srcData The source data to parse.
    * @param {ElectrificatorListener} listener The listener to use.
    * @param {string} path The path of the file.
@@ -132,7 +129,6 @@ class ElectrificatorParser extends DefaultParser {
 
   /**
    * Parse an object.
-   *
    * @param {object} srcObject The source object to parse.
    * @param {ElectrificatorListener} listener The listener to use.
    * @param {string} path The path of the file.
@@ -179,6 +175,10 @@ class ElectrificatorParser extends DefaultParser {
       case 'externalDevice':
         listener.enter_externalDevice(context);
         listener.exit_externalDevice(context);
+        break;
+      case 'contactor':
+        listener.enter_contactor(context);
+        listener.exit_contactor(context);
         break;
       default:
         break;

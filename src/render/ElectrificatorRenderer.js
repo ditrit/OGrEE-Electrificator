@@ -143,6 +143,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'externalDevice':
         this.renderExternalDevice(ctx, currentComponent);
         break;
+      case 'contactor':
+        this.renderContactor(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -453,6 +456,16 @@ class ElectrificatorRenderer extends DefaultRender {
     }
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render contactor object.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component.
+   */
+  renderContactor(ctx, currentComponent) {
+    // TODO: a contactor is very similar to a circuit breaker; factorize what can be put in common
+    this.renderCircuitBreaker(ctx, currentComponent);
   }
 
   /**

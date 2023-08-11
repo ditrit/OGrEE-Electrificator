@@ -6,34 +6,29 @@ import { Component, ComponentAttribute } from 'leto-modelizer-plugin-core';
 class ElectrificatorListener {
   /**
    * Parsed components.
-   *
    * @type {Component[]}
    */
   components = [];
 
   /**
    * Container stack.
-   *
    * @type {Component[]}
    */
   containerStack = [];
 
   /**
    * Default constructor.
-   *
    * @param {FileInformation} fileInformation - File information.
    * @param {ComponentDefinition[]} definitions - All component definitions.
    */
   constructor(fileInformation, definitions) {
     /**
      * File information.
-     *
      * @type {FileInformation}
      */
     this.fileInformation = fileInformation;
     /**
      * Array of component definitions.
-     *
      * @type {ComponentDefinition[]}
      */
     this.definitions = definitions;
@@ -41,7 +36,6 @@ class ElectrificatorListener {
 
   /**
    * Create component except workflow type component.
-   *
    * @param {string} id - Component id.
    * @param {ComponentDefinition} definition -  Component definition.
    * @param {ComponentAttribute[]} [attributes] - Component attribute.
@@ -59,7 +53,6 @@ class ElectrificatorListener {
   /**
    * Restore attributes from json file. If attribute is not defined in component definition, it will
    * be added as a string attribute.
-   *
    * @param {object} attributes - Attributes from json file.
    * @param {ComponentDefinition} componentDefinition - Component definition.
    * @returns {ComponentAttribute[]} Restored attributes.
@@ -81,7 +74,6 @@ class ElectrificatorListener {
 
   /**
    * Restore ports from json file.
-   *
    * @param {object} ports - Ports from json file.
    * @param {ComponentDefinition} componentDefinition - Component definition.
    * @returns {ComponentAttribute[]} Restored ports.
@@ -249,6 +241,31 @@ class ElectrificatorListener {
   }
 
   exit_externalDevice() {}
+
+  enter_contactor(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+
+    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
+    if (parent) {
+      attributes.push(new ComponentAttribute({
+        name: 'parentContainer',
+        value: parent.id,
+        type: 'string',
+        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+      }));
+    }
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_contactor() {}
 }
 
 export { ElectrificatorListener };
