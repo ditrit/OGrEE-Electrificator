@@ -125,7 +125,7 @@
   },
   "electricalLine": {
     "type": "electricalLine",
-    "model": "DefaultModel",
+    "model": "LineModel",
     "displayName": "Electrical Line",
     "icon": "LinkIcon",
     "parentTypes": [
@@ -151,7 +151,7 @@
   },
   "controlLine": {
     "type": "controlLine",
-    "model": "DefaultModel",
+    "model": "LineModel",
     "displayName": "Control Line",
     "icon": "LinkIcon",
     "parentTypes": [
