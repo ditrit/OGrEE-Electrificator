@@ -29,7 +29,7 @@
         ],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch", "energyMeter"
+       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil"
         ],
     "isContainer": true,
     "available": true,
@@ -387,6 +387,33 @@
         "type": "Link",
         "linkType": "Default",
         "linkRef": "electricalLine"
+      }
+    ]
+  },
+  "mxCoil": {
+    "type": "mxCoil",
+    "model": "DefaultModel",
+    "displayName": "MX Coil",
+    "icon": "MXCoilIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portControl",
+        "displayName": "Control",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "controlLine"
       }
     ]
   }

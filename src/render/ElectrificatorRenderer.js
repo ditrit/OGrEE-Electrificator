@@ -155,6 +155,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'energyMeter':
         this.renderEnergyMeter(ctx, currentComponent);
         break;
+      case 'mxCoil':
+        this.renderMxCoil(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -496,7 +499,7 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Connects an input of a component to a line.
+   * Connects an input of a component to a line and mark it as an output of the line.
    * If the line has been rendered, the connection is added to the line.
    * If the line has not been rendered, the connection is added to the partially rendered line
    * (that will be created if necessary).
@@ -534,7 +537,7 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Connects an output of a component to a line.
+   * Connects an output of a component to a line and mark it as an input of the line.
    * If the line has been rendered, the connection is added to the line.
    * If the line has not been rendered, the connection is added to the partially rendered line
    * (that will be created if necessary).
@@ -801,6 +804,40 @@ class ElectrificatorRenderer extends DefaultRender {
         ],
         out: [
           { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderMxCoil(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portControlLine = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portControl') {
+        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      }
+    });
+
+    if (portControlLine !== null) {
+      this.makeConnectionOutput(ctx, portControlLine, currentComponent.id, 'portControl', 'control');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes: {},
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [],
+        out: [
+          { name: 'portControl', domain: 'control', linkedTo: portControlLine },
         ],
       },
     };

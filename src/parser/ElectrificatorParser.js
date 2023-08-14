@@ -192,6 +192,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_energyMeter(context);
         listener.exit_energyMeter(context);
         break;
+      case 'mxCoil':
+        listener.enter_mxCoil(context);
+        listener.exit_mxCoil(context);
+        break;
       default:
         break;
     }
