@@ -137,6 +137,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'electricalLine':
         this.renderElectricalLine(ctx, currentComponent);
         break;
+      case 'controlLine':
+        this.renderControlLine(ctx, currentComponent);
+        break;
       case 'circuitBreaker':
         this.renderCircuitBreaker(ctx, currentComponent);
         break;
@@ -680,6 +683,43 @@ class ElectrificatorRenderer extends DefaultRender {
       parentId,
       attributes,
       domain: 'electrical',
+      description: currentComponent.definition.description,
+      ports: { in: input, out: output },
+    };
+
+    ctx.rendered.links.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render Control Line in a specified format and add it to the object list.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component to be rendered
+   */
+  renderControlLine(ctx, currentComponent) {
+    // Look for the parent container and serialise the attributes
+    let parentId = this.defaultParent;
+    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
+      if (attribute.definition === null) {
+        acc[attribute.name] = attribute.value;
+      } else if (attribute.definition?.name === 'parentContainer') {
+        parentId = attribute.value;
+      }
+      return acc;
+    }, {});
+
+    // Get the input and output ports from the partially rendered line
+    // and delete the partially rendered line
+    const partiallyRendered = ctx.partiallyRendered.links.get(currentComponent.id);
+    const input = partiallyRendered?.ports?.in ?? [];
+    const output = partiallyRendered?.ports?.out ?? [];
+    ctx.partiallyRendered.links.delete(currentComponent.id);
+
+    const contentDict = {
+      name: currentComponent.id,
+      type: currentComponent.definition.type,
+      parentId,
+      attributes,
+      domain: 'control',
       description: currentComponent.definition.description,
       ports: { in: input, out: output },
     };

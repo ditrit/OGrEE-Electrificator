@@ -201,9 +201,22 @@ class ElectrificatorListener {
     this.components.push(component);
   }
 
-  exit_electricalLine() {
+  exit_electricalLine() {}
 
+  enter_controlLine(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
   }
+
+  exit_controlLine() {}
 
   enter_circuitBreaker(ctx) {
     this.createActionableDipole(ctx);
