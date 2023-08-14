@@ -180,6 +180,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_contactor(context);
         listener.exit_contactor(context);
         break;
+      case 'switch':
+        listener.enter_switch(context);
+        listener.exit_switch(context);
+        break;
       default:
         break;
     }

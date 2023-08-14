@@ -146,6 +146,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'contactor':
         this.renderContactor(ctx, currentComponent);
         break;
+      case 'switch':
+        this.renderSwitch(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -402,11 +405,12 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Render circuit breaker object.
-   * @param {object} ctx The context of the parsing.
-   * @param {Component} currentComponent Current component.
+   * Render an actionable dipole object.
+   * Used for circuit breaker, contactor, etc. That behaves the same way.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent  Current component.
    */
-  renderCircuitBreaker(ctx, currentComponent) {
+  renderActionableDipole(ctx, currentComponent) {
     let parent = this.defaultParent;
     let portInLine = null;
     let portOutLine = null;
@@ -459,13 +463,30 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
+   * Render circuit breaker object.
+   * @param {object} ctx The context of the parsing.
+   * @param {Component} currentComponent Current component.
+   */
+  renderCircuitBreaker(ctx, currentComponent) {
+    this.renderActionableDipole(ctx, currentComponent);
+  }
+
+  /**
    * Render contactor object.
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component.
    */
   renderContactor(ctx, currentComponent) {
-    // TODO: a contactor is very similar to a circuit breaker; factorize what can be put in common
-    this.renderCircuitBreaker(ctx, currentComponent);
+    this.renderActionableDipole(ctx, currentComponent);
+  }
+
+  /**
+   * Render a switch object.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component.
+   */
+  renderSwitch(ctx, currentComponent) {
+    this.renderActionableDipole(ctx, currentComponent);
   }
 
   /**
