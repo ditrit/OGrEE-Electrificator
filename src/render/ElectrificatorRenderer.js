@@ -637,6 +637,8 @@ class ElectrificatorRenderer extends DefaultRender {
         portIn = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
         portOut = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        acc[attribute.name] = attribute.value;
       }
       return acc;
     }, {});
@@ -671,10 +673,12 @@ class ElectrificatorRenderer extends DefaultRender {
     // Look for the parent container and serialise the attributes
     let parentId = this.defaultParent;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
-      if (attribute.definition === null || attribute.definition?.name === 'phase') {
-        acc[attribute.name] = attribute.value;
-      } else if (attribute.definition?.name === 'parentContainer') {
+      if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
+      } else if (attribute.definition?.name === 'phase') {
+        acc[attribute.name] = attribute.value;
+      } else {
+        acc[attribute.name] = attribute.value;
       }
       return acc;
     }, {});
@@ -708,10 +712,10 @@ class ElectrificatorRenderer extends DefaultRender {
     // Look for the parent container and serialise the attributes
     let parentId = this.defaultParent;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
-      if (attribute.definition === null) {
-        acc[attribute.name] = attribute.value;
-      } else if (attribute.definition?.name === 'parentContainer') {
+      if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
+      } else {
+        acc[attribute.name] = attribute.value;
       }
       return acc;
     }, {});
@@ -743,12 +747,15 @@ class ElectrificatorRenderer extends DefaultRender {
    */
   renderExternalDevice(ctx, currentComponent) {
     let parent = this.defaultParent;
+    const attributes = {};
     let portInLine = null;
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
@@ -758,7 +765,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      attributes: {},
+      attributes,
       type: currentComponent.definition.type,
       domain: 'electrical',
       category: 'device',
@@ -777,6 +784,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
   renderEnergyMeter(ctx, currentComponent) {
     let parent = this.defaultParent;
+    const attributes = {};
     let portInLine = null;
     let portOutLine = null;
     currentComponent?.attributes.forEach((attribute) => {
@@ -786,6 +794,8 @@ class ElectrificatorRenderer extends DefaultRender {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
@@ -798,7 +808,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      attributes: {},
+      attributes,
       type: currentComponent.definition.type,
       domain: 'electrical',
       category: 'device',
@@ -819,6 +829,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
   renderMxCoil(ctx, currentComponent) {
     let parent = this.defaultParent;
+    const attributes = {};
     let portControlOutLine = null;
     let portControlInLine = null;
     currentComponent?.attributes.forEach((attribute) => {
@@ -828,6 +839,8 @@ class ElectrificatorRenderer extends DefaultRender {
         portControlInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portControlOut') {
         portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
@@ -840,7 +853,7 @@ class ElectrificatorRenderer extends DefaultRender {
 
     const contentDict = {
       name: currentComponent.id,
-      attributes: {},
+      attributes,
       type: currentComponent.definition.type,
       domain: 'control',
       category: 'device',
@@ -872,6 +885,8 @@ class ElectrificatorRenderer extends DefaultRender {
         attributes.keyType = attribute.value;
       } else if (attribute.definition?.name === 'keyId') {
         attributes.keyId = attribute.value;
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
