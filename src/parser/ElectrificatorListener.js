@@ -108,20 +108,51 @@ class ElectrificatorListener {
     return portList;
   }
 
+  /**
+   * Restore the 'parentContainer' attribute from a component.
+   * @param {ComponentDefinition} definition The component definition.
+   * @param {string} parentId The id of the parent container.
+   * @returns {ComponentAttribute} The 'parentContainer' attribute.
+   */
+  restoreParentContainer(definition, parentId) {
+    // TODO: Is it useful to check if the parent container exists?
+    // Check if there is a parent container in the stack.
+    // const parent = this.containerStack.find((container) => container.id === parentId);
+    // if (parent) {
+    return new ComponentAttribute({
+      name: 'parentContainer',
+      value: parentId,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
+    });
+    // }
+    //
+  }
+
+  /**
+   * Restore a generic dipole with a control line.
+   * It is used for the "circuitBreaker" component, the "contactor" component and so on.
+   * @param {object} ctx The parsing context.
+   */
+  createActionableDipole(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
   enter_Container(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
-    // Check if there is a parent container in the stack.
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
     this.containerStack.push(this.createComponent(
       ctx.current.name,
       definition,
@@ -136,16 +167,7 @@ class ElectrificatorListener {
   enter_electricalInterface(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);
-
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
     attributes.push(new ComponentAttribute({
       name: 'role',
@@ -169,16 +191,7 @@ class ElectrificatorListener {
   enter_electricalLine(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);
-
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
     const component = this.createComponent(
       ctx.current.name,
@@ -193,26 +206,7 @@ class ElectrificatorListener {
   }
 
   enter_circuitBreaker(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.createActionableDipole(ctx);
   }
 
   exit_circuitBreaker() {}
@@ -221,16 +215,7 @@ class ElectrificatorListener {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     let attributes = this.restoreAttributes(ctx.current.attributes, definition);
     attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
     const component = this.createComponent(
       ctx.current.name,
@@ -243,26 +228,7 @@ class ElectrificatorListener {
   exit_externalDevice() {}
 
   enter_contactor(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-
-    const parent = this.containerStack.find((container) => container.id === ctx.current.parentId);
-    if (parent) {
-      attributes.push(new ComponentAttribute({
-        name: 'parentContainer',
-        value: parent.id,
-        type: 'string',
-        definition: definition.definedAttributes.find((attribute) => attribute.name === 'parentContainer'),
-      }));
-    }
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.createActionableDipole(ctx);
   }
 
   exit_contactor() {}
