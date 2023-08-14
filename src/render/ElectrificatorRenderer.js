@@ -813,31 +813,39 @@ class ElectrificatorRenderer extends DefaultRender {
 
   renderMxCoil(ctx, currentComponent) {
     let parent = this.defaultParent;
-    let portControlLine = null;
+    let portControlOutLine = null;
+    let portControlInLine = null;
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
-      } else if (attribute.definition?.name === 'portControl') {
-        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portControlIn') {
+        portControlInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portControlOut') {
+        portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       }
     });
 
-    if (portControlLine !== null) {
-      this.makeConnectionOutput(ctx, portControlLine, currentComponent.id, 'portControl', 'control');
+    if (portControlOutLine !== null) {
+      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
+    }
+    if (portControlInLine !== null) {
+      this.makeConnectionInput(ctx, portControlInLine, currentComponent.id, 'portControlIn', 'control');
     }
 
     const contentDict = {
       name: currentComponent.id,
       attributes: {},
       type: currentComponent.definition.type,
-      domain: 'electrical',
+      domain: 'control',
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
       ports: {
-        in: [],
+        in: [
+          { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
+        ],
         out: [
-          { name: 'portControl', domain: 'control', linkedTo: portControlLine },
+          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
         ],
       },
     };

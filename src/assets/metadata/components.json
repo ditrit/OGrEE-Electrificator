@@ -409,10 +409,17 @@
         "required": true
       },
       {
-        "name": "portControl",
-        "displayName": "Control",
+        "name": "portControlIn",
+        "displayName": "Control In",
         "type": "Link",
         "linkType": "Default",
+        "linkRef": "controlLine"
+      },
+      {
+        "name": "portControlOut",
+        "displayName": "Control Out",
+        "type": "Link",
+        "linkType": "Reverse",
         "linkRef": "controlLine"
       }
     ]
