@@ -200,6 +200,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_securityKey(context);
         listener.exit_securityKey(context);
         break;
+      case 'transformer':
+        listener.enter_transformer(context);
+        listener.exit_transformer(context);
+        break;
       default:
         break;
     }

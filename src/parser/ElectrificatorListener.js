@@ -299,6 +299,22 @@ class ElectrificatorListener {
   }
 
   exit_securityKey() {}
+
+  enter_transformer(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_transformer() {}
 }
 
 export { ElectrificatorListener };
