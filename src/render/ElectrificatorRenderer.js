@@ -149,6 +149,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'switch':
         this.renderSwitch(ctx, currentComponent);
         break;
+      case 'energyMeter':
+        this.renderEnergyMeter(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -717,6 +720,48 @@ class ElectrificatorRenderer extends DefaultRender {
           { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
         ],
         out: [],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderEnergyMeter(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInLine = null;
+    let portOutLine = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      }
+    });
+
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes: {},
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
       },
     };
 

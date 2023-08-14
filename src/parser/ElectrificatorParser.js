@@ -184,6 +184,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_switch(context);
         listener.exit_switch(context);
         break;
+      case 'energyMeter':
+        listener.enter_energyMeter(context);
+        listener.exit_energyMeter(context);
+        break;
       default:
         break;
     }

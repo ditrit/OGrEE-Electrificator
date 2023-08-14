@@ -29,7 +29,7 @@
         ],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch"
+       "externalDevice", "contactor", "switch", "energyMeter"
         ],
     "isContainer": true,
     "available": true,
@@ -353,6 +353,40 @@
           "type": "Link",
           "linkType": "Reverse",
           "linkRef": "electricalLine"
+      }
+    ]
+  },
+  "energyMeter": {
+    "type": "energyMeter",
+    "model": "DefaultModel",
+    "displayName": "Energy Meter",
+    "icon": "EnergyMeterIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portIn",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
       }
     ]
   }
