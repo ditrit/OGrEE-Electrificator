@@ -29,7 +29,7 @@
         ],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil"
+       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey"
         ],
     "isContainer": true,
     "available": true,
@@ -412,15 +412,52 @@
         "name": "portControlIn",
         "displayName": "Control In",
         "type": "Link",
-        "linkType": "Default",
+        "linkType": "Reverse",
         "linkRef": "controlLine"
       },
       {
         "name": "portControlOut",
         "displayName": "Control Out",
         "type": "Link",
-        "linkType": "Reverse",
+        "linkType": "Default",
         "linkRef": "controlLine"
+      }
+    ]
+  },
+  "securityKey": {
+    "type": "securityKey",
+    "model": "DefaultModel",
+    "displayName": "Security Key",
+    "icon": "SecurityKeyIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portControlOut",
+        "displayName": "Control Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "controlLine"
+      },
+      {
+        "name": "keyType",
+        "displayName": "Key Type",
+        "type": "String"
+      },
+      {
+        "name": "keyId",
+        "displayName": "Key Id",
+        "type": "String"
       }
     ]
   }

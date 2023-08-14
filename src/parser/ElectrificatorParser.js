@@ -196,6 +196,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_mxCoil(context);
         listener.exit_mxCoil(context);
         break;
+      case 'securityKey':
+        listener.enter_securityKey(context);
+        listener.exit_securityKey(context);
+        break;
       default:
         break;
     }
