@@ -121,7 +121,7 @@
         "displayName": "In",
         "type": "Link",
         "linkType": "Reverse",
-        "linkRef": "electricalLine",
+        "linkRef": "controlLine",
         "required": false
       },
       {
@@ -129,7 +129,7 @@
         "displayName": "Out",
         "type": "Link",
         "linkType": "Default",
-        "linkRef": "electricalLine",
+        "linkRef": "controlLine",
         "required": false
       },
       {
