@@ -246,17 +246,7 @@ class ElectrificatorListener {
   exit_circuitBreaker() {}
 
   enter_externalDevice(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_externalDevice() {}
@@ -274,81 +264,31 @@ class ElectrificatorListener {
   exit_switch() {}
 
   enter_energyMeter(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_energyMeter() {}
 
   enter_mxCoil(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_mxCoil() {}
 
   enter_securityKey(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_securityKey() {}
 
   enter_transformer(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_transformer() {}
 
   enter_ground(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.enter_genericDipole(ctx);
   }
 
   exit_ground() {}
