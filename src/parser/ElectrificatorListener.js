@@ -319,6 +319,12 @@ class ElectrificatorListener {
   }
 
   exit_fuse() {}
+
+  enter_switchDisconnector(ctx) {
+    this.createActionableDipole(ctx);
+  }
+
+  exit_switchDisconnector() {}
 }
 
 export { ElectrificatorListener };

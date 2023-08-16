@@ -173,6 +173,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'fuse':
         this.renderFuse(ctx, currentComponent);
         break;
+      case 'switchDisconnector':
+        this.renderSwitchDisconnector(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1090,6 +1093,58 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   renderFuse(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInLine = null;
+    let portOutLine = null;
+    let portControlLine = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portControl') {
+        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
+      }
+    });
+
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+    if (portControlLine !== null) {
+      this.makeConnectionInput(ctx, portControlLine, currentComponent.id, 'portControl', 'control');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+          { name: 'portControl', domain: 'control', linkedTo: portControlLine },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderSwitchDisconnector(ctx, currentComponent) {
     let parent = this.defaultParent;
     let portInLine = null;
     let portOutLine = null;
