@@ -1,24 +1,4 @@
 {
-  "floor": {
-    "type": "floor",
-    "model": "DefaultContainer",
-    "displayName": "Floor",
-    "icon": "DefaultIcon",
-    "parentTypes": [],
-    "childrenTypes": [
-        "container"
-        ],
-    "isContainer": true,
-    "available": true,
-    "attributes": [
-      {
-        "name": "name",
-        "type": "String",
-        "required": true,
-        "rules": {}
-      }
-    ]
-  },
   "container": {
     "type": "container",
     "model": "DefaultContainer",
@@ -34,13 +14,6 @@
     "isContainer": true,
     "available": true,
     "attributes": [
-      {
-        "name": "floor",
-        "displayName": "Floor",
-        "type": "Reference",
-        "containerRef": "floor",
-        "required": false
-      },
       {
         "name": "parentContainer",
         "displayName": "Parent Container",
