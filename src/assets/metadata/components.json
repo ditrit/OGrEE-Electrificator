@@ -8,7 +8,7 @@
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer",
-      "ground", "fuse", "switchDisconnector", "disconnector"
+      "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply"
         ],
     "isContainer": true,
     "available": true,
@@ -682,6 +682,31 @@
         "displayName": "Breaking Power",
         "type": "String",
         "required": false
+      }
+    ]
+  },
+  "electricalSupply": {
+    "type": "electricalSupply",
+    "model": "DefaultModel",
+    "displayName": "Electrical Supply",
+    "icon": "ElectricalSupplyIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
       }
     ]
   }

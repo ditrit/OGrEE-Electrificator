@@ -228,6 +228,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_disconnector(context);
         listener.exit_disconnector(context);
         break;
+      case 'electricalSupply':
+        listener.enter_electricalSupply(context);
+        listener.exit_electricalSupply(context);
+        break;
       default:
         break;
     }

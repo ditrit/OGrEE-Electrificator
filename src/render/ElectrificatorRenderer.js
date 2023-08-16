@@ -179,6 +179,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'disconnector':
         this.renderDisconnector(ctx, currentComponent);
         break;
+      case 'electricalSupply':
+        this.renderElectricalSupply(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1242,6 +1245,43 @@ class ElectrificatorRenderer extends DefaultRender {
           { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
           { name: 'portControl', domain: 'control', linkedTo: portControlLine },
         ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderElectricalSupply(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portOutLine = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
+      }
+    });
+
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [],
         out: [
           { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
         ],

@@ -331,6 +331,12 @@ class ElectrificatorListener {
   }
 
   exit_disconnector() {}
+
+  enter_electricalSupply(ctx) {
+    this.enter_genericDipole(ctx);
+  }
+
+  exit_electricalSupply() {}
 }
 
 export { ElectrificatorListener };
