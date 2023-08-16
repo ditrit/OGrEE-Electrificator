@@ -647,8 +647,8 @@ class ElectrificatorRenderer extends DefaultRender {
   renderElectricalInterface(ctx, currentComponent) {
     let parentId = this.defaultParent;
     let role = null;
-    let portIn = null;
-    let portOut = null;
+    let portInLine = null;
+    let portOutLine = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
@@ -657,14 +657,21 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'role') {
         role = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
-        portIn = this.getLinkName(ctx, currentComponent, attribute.value);
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
-        portOut = this.getLinkName(ctx, currentComponent, attribute.value);
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
         acc[attribute.name] = attribute.value;
       }
       return acc;
     }, {});
+
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
 
     const contentDict = {
       name: currentComponent.id,
@@ -676,10 +683,10 @@ class ElectrificatorRenderer extends DefaultRender {
       description: currentComponent.definition.description,
       ports: {
         in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
         ],
         out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
         ],
       },
     };

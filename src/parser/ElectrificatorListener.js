@@ -192,7 +192,8 @@ class ElectrificatorListener {
 
   enter_electricalInterface(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
     attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
     attributes.push(new ComponentAttribute({
