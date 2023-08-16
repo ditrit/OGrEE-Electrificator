@@ -208,6 +208,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_ground(context);
         listener.exit_ground(context);
         break;
+      case 'fuse':
+        listener.enter_fuse(context);
+        listener.exit_fuse(context);
+        break;
       default:
         break;
     }

@@ -29,7 +29,7 @@
         ],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer", "ground"
+       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer", "ground", "fuse"
         ],
     "isContainer": true,
     "available": true,
@@ -532,6 +532,59 @@
         "type": "Link",
         "linkType": "Reverse",
         "linkRef": "electricalLine"
+      }
+    ]
+  },
+  "fuse": {
+    "type": "fuse",
+    "model": "DefaultModel",
+    "displayName": "Fuse",
+    "icon": "FuseIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portIn",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portControl",
+        "displayName": "Control",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "controlLine"
+      },
+      {
+        "name": "model",
+        "displayName": "Model",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "breakingPower",
+        "displayName": "Breaking Power",
+        "type": "String",
+        "required": false
       }
     ]
   }

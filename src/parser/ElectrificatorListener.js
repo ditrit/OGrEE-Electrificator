@@ -331,6 +331,12 @@ class ElectrificatorListener {
   }
 
   exit_ground() {}
+
+  enter_fuse(ctx) {
+    this.createActionableDipole(ctx);
+  }
+
+  exit_fuse() {}
 }
 
 export { ElectrificatorListener };
