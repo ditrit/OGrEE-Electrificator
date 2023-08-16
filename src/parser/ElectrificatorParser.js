@@ -204,6 +204,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_transformer(context);
         listener.exit_transformer(context);
         break;
+      case 'ground':
+        listener.enter_ground(context);
+        listener.exit_ground(context);
+        break;
       default:
         break;
     }

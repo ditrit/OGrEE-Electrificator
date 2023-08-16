@@ -29,7 +29,7 @@
         ],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer"
+       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer", "ground"
         ],
     "isContainer": true,
     "available": true,
@@ -505,6 +505,33 @@
         "displayName": "Power",
         "type": "String",
         "required": false
+      }
+    ]
+  },
+  "ground": {
+    "type": "ground",
+    "model": "DefaultModel",
+    "displayName": "Ground",
+    "icon": "GroundIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portIn",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
       }
     ]
   }
