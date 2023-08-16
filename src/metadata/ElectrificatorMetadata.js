@@ -33,7 +33,6 @@ class ElectrificatorMetadata extends DefaultMetadata {
     const components = [];
 
     Object.values(metadata.components).forEach((component) => {
-      console.log(component);
       components.push(new ComponentDefinition({
         ...component,
         definedAttributes: component.attributes
