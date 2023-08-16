@@ -160,6 +160,10 @@ class ElectrificatorParser extends DefaultParser {
         });
         listener.exit_Container(context);
         break;
+      case 'genericDipole':
+        listener.enter_genericDipole(context);
+        listener.exit_genericDipole(context);
+        break;
       case 'electricalInterface':
         listener.enter_electricalInterface(context);
         listener.exit_electricalInterface(context);

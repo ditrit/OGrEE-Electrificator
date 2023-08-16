@@ -164,6 +164,27 @@ class ElectrificatorListener {
     this.components.push(this.containerStack.pop());
   }
 
+  /**
+   * Create a generic dipole. Can be used for other components that have the same interface
+   * as a generic dipole.
+   * @param {object} ctx The parsing context.
+   */
+  enter_genericDipole(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_genericDipole() {}
+
   enter_electricalInterface(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);

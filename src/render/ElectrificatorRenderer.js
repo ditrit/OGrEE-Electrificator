@@ -399,23 +399,31 @@ class ElectrificatorRenderer extends DefaultRender {
    */
   renderGenericDipole(ctx, currentComponent) {
     let parent = this.defaultParent;
-    let portIn = null;
-    let portOut = null;
+    let portInLine = null;
+    let portOutLine = null;
+    const attributes = {};
     currentComponent?.attributes.forEach((attribute) => {
-      if (attribute.definition?.name === 'parent') {
+      if (attribute.definition?.name === 'parentContainer') {
         parent = attribute.value;
-      }
-      if (attribute.definition?.name === 'portIn') {
-        portIn = attribute.value;
-      }
-      if (attribute.definition?.name === 'portOut') {
-        portOut = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
       }
     });
 
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+
     const contentDict = {
       name: currentComponent.id,
-      attributes: {},
+      attributes,
       type: currentComponent.definition.type,
       domain: 'electrical',
       category: 'device',
@@ -423,10 +431,10 @@ class ElectrificatorRenderer extends DefaultRender {
       description: currentComponent.definition.description,
       ports: {
         in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
         ],
         out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
         ],
       },
     };

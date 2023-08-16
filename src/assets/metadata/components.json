@@ -4,9 +4,7 @@
     "model": "DefaultContainer",
     "displayName": "Container Object",
     "icon": "ContainerIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
        "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer", "ground", "fuse"
@@ -28,23 +26,30 @@
     "model": "GenericDipole",
     "displayName": "Generic Dipole",
     "icon": "ResistorIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
       {
-        "name": "parent",
+        "name": "parentContainer",
+        "displayName": "Parent",
         "type": "Reference",
         "containerRef": "container",
         "required": true
       },
       {
-        "name": "Port in",
+        "name": "portIn",
+        "displayName": "In",
         "type": "Link",
         "linkType": "Reverse",
-        "linkRef": "genericDipole"
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
       }
     ]
   },
@@ -53,9 +58,7 @@
     "model": "DefaultModel",
     "displayName": "Electrical Interface",
     "icon": "InterfaceIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -101,9 +104,7 @@
     "model": "LineModel",
     "displayName": "Electrical Line",
     "icon": "LinkIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -127,9 +128,7 @@
     "model": "LineModel",
     "displayName": "Control Line",
     "icon": "ControlLineIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -147,9 +146,7 @@
     "model": "DefaultModel",
     "displayName": "Circuit Breaker",
     "icon": "CircuitBreakerIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -200,9 +197,7 @@
     "model": "DefaultModel",
     "displayName": "Contactor",
     "icon": "ContactorIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -253,9 +248,7 @@
     "model": "DefaultModel",
     "displayName": "Switch",
     "icon": "SwitchIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -307,9 +300,7 @@
     "model": "DefaultModel",
     "displayName": "External Component",
     "icon": "ExternalDeviceIcon",
-    "parentTypes": [
-        "container"
-        ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -368,9 +359,7 @@
     "model": "DefaultModel",
     "displayName": "MX Coil",
     "icon": "MXCoilIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -402,9 +391,7 @@
     "model": "DefaultModel",
     "displayName": "Security Key",
     "icon": "SecurityKeyIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -439,9 +426,7 @@
     "model": "DefaultModel",
     "displayName": "Transformer",
     "icon": "TransformerIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -486,9 +471,7 @@
     "model": "DefaultModel",
     "displayName": "Ground",
     "icon": "GroundIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
@@ -513,9 +496,7 @@
     "model": "DefaultModel",
     "displayName": "Fuse",
     "icon": "FuseIcon",
-    "parentTypes": [
-      "container"
-    ],
+    "parentTypes": ["container"],
     "isContainer": false,
     "available": true,
     "attributes": [
