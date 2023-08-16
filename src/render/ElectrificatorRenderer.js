@@ -371,7 +371,16 @@ class ElectrificatorRenderer extends DefaultRender {
     }
 
     if (Object.prototype.toString.call(linkValue) === '[object Array]') {
-      return linkValue[0];
+      // HACK: Sometimes, the array contains null values. Skip them until we find a valid value.
+      let index = 0;
+      while (linkValue[index] === null && index < linkValue.length) {
+        index += 1;
+      }
+      if (index === linkValue.length) {
+        ctx.warnings.push(`Link value is invalid: "${linkValue}" for "${currentComponent.id}"`);
+        return null;
+      }
+      return linkValue[index];
     }
     ctx.warnings.push(`Link value is invalid: "${linkValue}" for "${currentComponent.id}"`);
     return null;
