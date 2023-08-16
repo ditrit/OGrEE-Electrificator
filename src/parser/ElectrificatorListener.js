@@ -85,6 +85,11 @@ class ElectrificatorListener {
     // Currently, copied from the jobs of githubator
 
     ports.in?.forEach((port) => {
+      // Is it useful to skip ports if they are empty
+      if (port.linkedTo === null) {
+        return;
+      }
+
       portList.push(new ComponentAttribute({
         name: port.name,
         value: port.linkedTo,
