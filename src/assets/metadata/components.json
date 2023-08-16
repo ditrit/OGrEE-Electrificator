@@ -6,8 +6,9 @@
     "icon": "ContainerIcon",
     "parentTypes": ["container"],
     "childrenTypes": [
-      "container", "genericDipole", "electricalInterface", "electricalLine", "circuitBreaker", "controlLine",
-       "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer", "ground", "fuse"
+      "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
+      "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer",
+      "ground", "fuse"
         ],
     "isContainer": true,
     "available": true,
@@ -94,6 +95,46 @@
       {
         "name": "phase",
         "displayName": "Phase",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  "controlInterface": {
+    "type": "controlInterface",
+    "model": "DefaultModel",
+    "displayName": "Control Interface",
+    "icon": "ControlInterfaceIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "type": "Reference",
+        "containerRef": "container",
+        "displayName": "Parent",
+        "required": true
+      },
+      {
+        "name": "portIn",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine",
+        "required": false
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine",
+        "required": false
+      },
+      {
+        "name": "role",
+        "displayName": "Role",
         "type": "String",
         "required": false
       }

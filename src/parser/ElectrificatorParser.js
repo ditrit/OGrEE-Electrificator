@@ -172,6 +172,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_electricalLine(context);
         listener.exit_electricalLine(context);
         break;
+      case 'controlInterface':
+        listener.enter_controlInterface(context);
+        listener.exit_controlInterface(context);
+        break;
       case 'controlLine':
         listener.enter_controlLine(context);
         listener.exit_controlLine(context);

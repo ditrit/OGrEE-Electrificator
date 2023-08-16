@@ -137,6 +137,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'electricalLine':
         this.renderElectricalLine(ctx, currentComponent);
         break;
+      case 'controlInterface':
+        this.renderControlInterface(ctx, currentComponent);
+        break;
       case 'controlLine':
         this.renderControlLine(ctx, currentComponent);
         break;
@@ -731,6 +734,61 @@ class ElectrificatorRenderer extends DefaultRender {
     };
 
     ctx.rendered.links.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render a control interface in a specified format and add it to the object list.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component to be rendered
+   */
+  renderControlInterface(ctx, currentComponent) {
+    let parentId = this.defaultParent;
+    let role = null;
+    let portInLine = null;
+    let portOutLine = null;
+    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
+      if (attribute.definition === null || attribute.definition?.name === 'phase') {
+        acc[attribute.name] = attribute.value;
+      } else if (attribute.definition?.name === 'parentContainer') {
+        parentId = attribute.value;
+      } else if (attribute.definition?.name === 'role') {
+        role = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        acc[attribute.name] = attribute.value;
+      }
+      return acc;
+    }, {});
+
+    if (portInLine !== null) {
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutLine !== null) {
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      type: currentComponent.definition.type,
+      parentId,
+      attributes,
+      role,
+      domain: 'control',
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.interfaces.set(currentComponent.id, contentDict);
   }
 
   /**

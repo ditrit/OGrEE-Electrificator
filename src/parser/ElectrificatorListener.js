@@ -222,6 +222,29 @@ class ElectrificatorListener {
 
   exit_electricalLine() {}
 
+  enter_controlInterface(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
+    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    attributes.push(new ComponentAttribute({
+      name: 'role',
+      value: ctx.current.role,
+      type: 'string',
+      definition: definition.definedAttributes.find((attribute) => attribute.name === 'role'),
+    }));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  exit_controlInterface() {}
+
   enter_controlLine(ctx) {
     const definition = this.definitions.find((def) => def.type === ctx.current.type);
     const attributes = this.restoreAttributes(ctx.current.attributes, definition);
