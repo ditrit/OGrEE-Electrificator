@@ -428,7 +428,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -482,7 +482,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -858,7 +858,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portIn') {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -898,7 +898,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -943,7 +943,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControlOut') {
         portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -989,7 +989,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'keyId') {
         attributes.keyId = attribute.value;
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1031,7 +1031,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1077,7 +1077,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portIn') {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1120,7 +1120,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1172,7 +1172,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1224,7 +1224,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControl') {
         portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1270,7 +1270,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
@@ -1307,7 +1307,7 @@ class ElectrificatorRenderer extends DefaultRender {
       } else if (attribute.definition?.name === 'portControlOut') {
         portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else {
-        attributes[attribute.definition.name] = attribute.value;
+        attributes[attribute.name] = attribute.value;
       }
     });
 
