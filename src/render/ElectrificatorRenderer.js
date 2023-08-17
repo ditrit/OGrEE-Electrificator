@@ -185,6 +185,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'manualActuator':
         this.renderManualActuator(ctx, currentComponent);
         break;
+      case 'kmCoil':
+        this.renderKmCoil(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1322,6 +1325,51 @@ class ElectrificatorRenderer extends DefaultRender {
       description: currentComponent.definition.description,
       ports: {
         in: [],
+        out: [
+          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderKmCoil(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    const attributes = {};
+    let portControlOutLine = null;
+    let portControlInLine = null;
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portControlIn') {
+        portControlInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portControlOut') {
+        portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.name] = attribute.value;
+      }
+    });
+
+    if (portControlOutLine !== null) {
+      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
+    }
+    if (portControlInLine !== null) {
+      this.makeConnectionInput(ctx, portControlInLine, currentComponent.id, 'portControlIn', 'control');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'control',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
+        ],
         out: [
           { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
         ],
