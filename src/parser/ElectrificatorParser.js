@@ -232,6 +232,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_electricalSupply(context);
         listener.exit_electricalSupply(context);
         break;
+      case 'manualActuator':
+        listener.enter_manualActuator(context);
+        listener.exit_manualActuator(context);
+        break;
       default:
         break;
     }

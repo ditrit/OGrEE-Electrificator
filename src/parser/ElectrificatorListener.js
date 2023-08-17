@@ -337,6 +337,12 @@ class ElectrificatorListener {
   }
 
   exit_electricalSupply() {}
+
+  enter_manualActuator(ctx) {
+    this.enter_genericDipole(ctx);
+  }
+
+  exit_manualActuator() {}
 }
 
 export { ElectrificatorListener };

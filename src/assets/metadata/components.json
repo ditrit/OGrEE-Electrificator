@@ -8,7 +8,7 @@
     "childrenTypes": [
       "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "securityKey", "transformer",
-      "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply"
+      "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply", "manualActuator"
         ],
     "isContainer": true,
     "available": true,
@@ -707,6 +707,31 @@
         "type": "Link",
         "linkType": "Default",
         "linkRef": "electricalLine"
+      }
+    ]
+  },
+  "manualActuator": {
+    "type": "manualActuator",
+    "model": "DefaultModel",
+    "displayName": "Manual Actuator",
+    "icon": "ManualActuatorIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portControlOut",
+        "displayName": "Control Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "controlLine"
       }
     ]
   }

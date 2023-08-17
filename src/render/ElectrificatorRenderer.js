@@ -182,6 +182,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'electricalSupply':
         this.renderElectricalSupply(ctx, currentComponent);
         break;
+      case 'manualActuator':
+        this.renderManualActuator(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1284,6 +1287,43 @@ class ElectrificatorRenderer extends DefaultRender {
         in: [],
         out: [
           { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderManualActuator(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portControlOutLine = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portControlOut') {
+        portControlOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.definition.name] = attribute.value;
+      }
+    });
+
+    if (portControlOutLine !== null) {
+      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'control',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [],
+        out: [
+          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
         ],
       },
     };
