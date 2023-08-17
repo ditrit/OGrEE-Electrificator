@@ -9,7 +9,7 @@
       "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "kmCoil",
       "securityKey", "transformer", "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply",
-      "manualActuator"
+      "manualActuator", "generalActuator"
         ],
     "isContainer": true,
     "available": true,
@@ -745,27 +745,52 @@
     "isContainer": false,
     "available": true,
     "attributes": [
-        {
-            "name": "parentContainer",
-            "displayName": "Parent",
-            "type": "Reference",
-            "containerRef": "container",
-            "required": true
-        },
-        {
-            "name": "portControlIn",
-            "displayName": "Control In",
-            "type": "Link",
-            "linkType": "Reverse",
-            "linkRef": "controlLine"
-        },
-        {
-            "name": "portControlOut",
-            "displayName": "Control Out",
-            "type": "Link",
-            "linkType": "Default",
-            "linkRef": "controlLine"
-        }
+      {
+          "name": "parentContainer",
+          "displayName": "Parent",
+          "type": "Reference",
+          "containerRef": "container",
+          "required": true
+      },
+      {
+          "name": "portControlIn",
+          "displayName": "Control In",
+          "type": "Link",
+          "linkType": "Reverse",
+          "linkRef": "controlLine"
+      },
+      {
+          "name": "portControlOut",
+          "displayName": "Control Out",
+          "type": "Link",
+          "linkType": "Default",
+          "linkRef": "controlLine"
+      }
+    ]
+  },
+  "generalActuator": {
+    "type": "generalActuator",
+    "model": "DefaultModel",
+    "displayName": "General Actuator",
+    "icon": "GeneralActuatorIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+          "name": "parentContainer",
+          "displayName": "Parent",
+          "type": "Reference",
+          "containerRef": "container",
+          "required": true
+      },
+      {
+          "name": "portControlOut",
+          "displayName": "Control Out",
+          "type": "Link",
+          "linkType": "Default",
+          "linkRef": "controlLine"
+      }
     ]
   }
 }

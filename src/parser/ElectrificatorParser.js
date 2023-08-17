@@ -240,6 +240,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_kmCoil(context);
         listener.exit_kmCoil(context);
         break;
+      case 'generalActuator':
+        listener.enter_generalActuator(context);
+        listener.exit_generalActuator(context);
+        break;
       default:
         break;
     }

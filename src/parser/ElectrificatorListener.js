@@ -349,6 +349,12 @@ class ElectrificatorListener {
   }
 
   exit_kmCoil() {}
+
+  enter_generalActuator(ctx) {
+    this.enter_genericDipole(ctx);
+  }
+
+  exit_generalActuator() {}
 }
 
 export { ElectrificatorListener };
