@@ -355,6 +355,12 @@ class ElectrificatorListener {
   }
 
   exit_generalActuator() {}
+
+  enter_sts(ctx) {
+    this.enter_genericDipole(ctx);
+  }
+
+  exit_sts() {}
 }
 
 export { ElectrificatorListener };

@@ -9,7 +9,7 @@
       "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "kmCoil",
       "securityKey", "transformer", "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply",
-      "manualActuator", "generalActuator"
+      "manualActuator", "generalActuator", "sts"
         ],
     "isContainer": true,
     "available": true,
@@ -790,6 +790,55 @@
           "type": "Link",
           "linkType": "Default",
           "linkRef": "controlLine"
+      }
+    ]
+  },
+  "sts": {
+    "type": "sts",
+    "model": "DefaultModel",
+    "displayName": "STS",
+    "icon": "STSIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": true
+      },
+      {
+        "name": "portInA",
+        "displayName": "In A",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portInB",
+        "displayName": "In B",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "power",
+        "displayName": "Power",
+        "type": "String"
+      },
+      {
+        "name": "antiHarmonicFilters",
+        "displayName": "Anti Harmonic Filters",
+        "type": "Boolean"
       }
     ]
   }

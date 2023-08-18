@@ -244,6 +244,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_generalActuator(context);
         listener.exit_generalActuator(context);
         break;
+      case 'sts':
+        listener.enter_sts(context);
+        listener.exit_sts(context);
+        break;
       default:
         break;
     }

@@ -191,6 +191,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'generalActuator':
         this.renderGeneralActuator(ctx, currentComponent);
         break;
+      case 'sts':
+        this.renderSts(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1412,6 +1415,58 @@ class ElectrificatorRenderer extends DefaultRender {
         in: [],
         out: [
           { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderSts(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInA = null;
+    let portInB = null;
+    let portOut = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portOut') {
+        portOut = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portInA') {
+        portInA = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portInB') {
+        portInB = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.name] = attribute.value;
+      }
+    });
+
+    if (portInA !== null) {
+      this.makeConnectionInput(ctx, portInA, currentComponent.id, 'portInA', 'electrical');
+    }
+    if (portInB !== null) {
+      this.makeConnectionInput(ctx, portInB, currentComponent.id, 'portInB', 'electrical');
+    }
+    if (portOut !== null) {
+      this.makeConnectionOutput(ctx, portOut, currentComponent.id, 'portOut', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portInA', domain: 'electrical', linkedTo: portInA },
+          { name: 'portInB', domain: 'electrical', linkedTo: portInB },
+        ],
+        out: [
+          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
         ],
       },
     };
