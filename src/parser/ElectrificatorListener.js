@@ -361,6 +361,12 @@ class ElectrificatorListener {
   }
 
   exit_sts() {}
+
+  enter_junctionBox(ctx) {
+    this.enter_genericDipole(ctx);
+  }
+
+  exit_junctionBox() {}
 }
 
 export { ElectrificatorListener };

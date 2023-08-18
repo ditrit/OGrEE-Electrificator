@@ -194,6 +194,9 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'sts':
         this.renderSts(ctx, currentComponent);
         break;
+      case 'junctionBox':
+        this.renderJunctionBox(ctx, currentComponent);
+        break;
       default:
         ctx.warnings.push(`Component type ${currentComponent.definition.type} is not supported (${currentComponent.name})`);
         break;
@@ -1467,6 +1470,65 @@ class ElectrificatorRenderer extends DefaultRender {
         ],
         out: [
           { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+        ],
+      },
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  renderJunctionBox(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portIn = null;
+    let portGround = null;
+    let portOutA = null;
+    let portOutB = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portOutA') {
+        portOutA = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOutB') {
+        portOutB = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portIn') {
+        portIn = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portGround') {
+        portGround = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.name] = attribute.value;
+      }
+    });
+
+    if (portIn !== null) {
+      this.makeConnectionInput(ctx, portIn, currentComponent.id, 'portIn', 'electrical');
+    }
+    if (portOutA !== null) {
+      this.makeConnectionOutput(ctx, portOutA, currentComponent.id, 'portOutA', 'electrical');
+    }
+    if (portOutB !== null) {
+      this.makeConnectionOutput(ctx, portOutB, currentComponent.id, 'portOutB', 'electrical');
+    }
+    if (portGround !== null) {
+      this.makeConnectionOutput(ctx, portGround, currentComponent.id, 'portGround', 'electrical');
+    }
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports: {
+        in: [
+          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+        ],
+        out: [
+          { name: 'portOutA', domain: 'electrical', linkedTo: portOutA },
+          { name: 'portOutB', domain: 'electrical', linkedTo: portOutB },
+          { name: 'portGround', domain: 'electrical', linkedTo: portGround },
         ],
       },
     };

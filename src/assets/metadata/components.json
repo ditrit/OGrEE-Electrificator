@@ -9,7 +9,7 @@
       "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "kmCoil",
       "securityKey", "transformer", "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply",
-      "manualActuator", "generalActuator", "sts"
+      "manualActuator", "generalActuator", "sts", "junctionBox"
         ],
     "isContainer": true,
     "available": true,
@@ -839,6 +839,54 @@
         "name": "antiHarmonicFilters",
         "displayName": "Anti Harmonic Filters",
         "type": "Boolean"
+      }
+    ]
+  },
+  "junctionBox": {
+    "type": "junctionBox",
+    "model": "DefaultModel",
+    "displayName": "Junction Box",
+    "icon": "JunctionBoxIcon",
+    "parentTypes": [
+      "container"
+    ],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "displayName": "Parent Container",
+        "type": "Reference",
+        "containerRef": "container",
+        "required": false
+      },
+      {
+        "name": "portIn",
+        "displayName": "In",
+        "type": "Link",
+        "linkType": "Reverse",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portGround",
+        "displayName": "Ground",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOutA",
+        "displayName": "Out A",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
+      },
+      {
+        "name": "portOutB",
+        "displayName": "Out B",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine"
       }
     ]
   }

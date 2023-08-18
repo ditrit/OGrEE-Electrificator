@@ -248,6 +248,10 @@ class ElectrificatorParser extends DefaultParser {
         listener.enter_sts(context);
         listener.exit_sts(context);
         break;
+      case 'junctionBox':
+        listener.enter_junctionBox(context);
+        listener.exit_junctionBox(context);
+        break;
       default:
         break;
     }
