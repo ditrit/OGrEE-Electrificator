@@ -6,7 +6,7 @@
     "icon": "ContainerIcon",
     "parentTypes": ["container"],
     "childrenTypes": [
-      "container", "genericDipole", "electricalInputInterface", "electricalOutputInterface", "electricalLine", "controlInterface", "controlLine",
+      "container", "genericDipole", "electricalInputInterface", "electricalOutputInterface", "electricalLine", "controlInputInterface", "controlOutputInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "kmCoil",
       "securityKey", "transformer", "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply",
       "manualActuator", "generalActuator", "sts", "junctionBox"
@@ -143,10 +143,48 @@
       }
     ]
   },
-  "controlInterface": {
-    "type": "controlInterface",
+  "controlInputInterface": {
+    "type": "controlInputInterface",
     "model": "DefaultModel",
-    "displayName": "Control Interface",
+    "displayName": "Control Input Interface",
+    "icon": "ControlInterfaceIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "type": "Reference",
+        "containerRef": "container",
+        "displayName": "Parent",
+        "required": true
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "controlLine",
+        "required": false
+      },
+      {
+        "name": "inputSource",
+        "displayName": "Input Source",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "inputName",
+        "displayName": "Input Name",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  "controlOutputInterface": {
+    "type": "controlOutputInterface",
+    "model": "DefaultModel",
+    "displayName": "Control Output Interface",
     "icon": "ControlInterfaceIcon",
     "parentTypes": ["container"],
     "isContainer": false,
@@ -168,16 +206,14 @@
         "required": false
       },
       {
-        "name": "portOut",
-        "displayName": "Out",
-        "type": "Link",
-        "linkType": "Default",
-        "linkRef": "controlLine",
+        "name": "outputSource",
+        "displayName": "Output Source",
+        "type": "String",
         "required": false
       },
       {
-        "name": "role",
-        "displayName": "Role",
+        "name": "outputName",
+        "displayName": "Output Name",
         "type": "String",
         "required": false
       }

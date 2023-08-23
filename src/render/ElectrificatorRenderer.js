@@ -138,7 +138,8 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'electricalLine':
         this.renderElectricalLine(ctx, currentComponent);
         break;
-      case 'controlInterface':
+      case 'controlInputInterface':
+      case 'controlOutputInterface':
         this.renderControlInterface(ctx, currentComponent);
         break;
       case 'controlLine':
@@ -782,20 +783,24 @@ class ElectrificatorRenderer extends DefaultRender {
    */
   renderControlInterface(ctx, currentComponent) {
     let parentId = this.defaultParent;
-    let role = null;
+    const domain = 'control';
     let portInLine = null;
     let portOutLine = null;
+    let sourceAttributeValue = null;
+    let nameAttributeValue = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
       } else if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
-      } else if (attribute.definition?.name === 'role') {
-        role = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'inputSource' || attribute.definition?.name === 'outputSource') {
+        sourceAttributeValue = attribute.value;
+      } else if (attribute.definition?.name === 'inputName' || attribute.definition?.name === 'outputName') {
+        nameAttributeValue = attribute.value;
       } else {
         acc[attribute.name] = attribute.value;
       }
@@ -803,28 +808,39 @@ class ElectrificatorRenderer extends DefaultRender {
     }, {});
 
     if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
+      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', domain);
     }
     if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
+      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', domain);
+    }
+
+    const ports = {
+      in: [],
+      out: [],
+    };
+
+    if (currentComponent.definition.type === 'controlInputInterface') {
+      attributes.role = 'input';
+      ports.in.push({
+        name: 'portIn', domain, linkedTo: nameAttributeValue, source: sourceAttributeValue,
+      });
+      ports.out.push({ name: 'portOut', domain, linkedTo: portOutLine });
+    } else {
+      attributes.role = 'output';
+      ports.out.push({
+        name: 'portOut', domain, linkedTo: nameAttributeValue, source: sourceAttributeValue,
+      });
+      ports.in.push({ name: 'portIn', domain, linkedTo: portInLine });
     }
 
     const contentDict = {
       name: currentComponent.id,
-      type: currentComponent.definition.type,
+      type: 'controlInterface',
       parentId,
       attributes,
-      role,
-      domain: 'control',
+      domain,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-        ],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.interfaces.set(currentComponent.id, contentDict);

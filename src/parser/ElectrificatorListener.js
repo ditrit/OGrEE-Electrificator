@@ -268,16 +268,61 @@ class ElectrificatorListener {
   exit_electricalLine() {}
 
   enter_controlInterface(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    let interfaceType = 'controlOutputInterface';
+    let nameAttributeName = 'outputName';
+    let sourceAttributeName = 'outputSource';
+    let nameAttributeValue = '';
+    let sourceAttributeValue = '';
+    // Workaround to indicate to search in another file for a specific interface
+    if (ctx.current.attributes.role === 'input') {
+      interfaceType = 'controlInputInterface';
+      nameAttributeName = 'inputName';
+      sourceAttributeName = 'inputSource';
+      ctx.current.ports.in.forEach((port) => {
+        if (port.linkedTo !== null) {
+          nameAttributeValue = port.linkedTo;
+          sourceAttributeValue = port.source;
+        }
+      });
+      // Remove the port from the list of ports to avoid showing it
+      ctx.current.ports.in = [];
+    } else {
+      ctx.current.ports.out.forEach((port) => {
+        if (port.linkedTo !== null) {
+          nameAttributeValue = port.linkedTo;
+          sourceAttributeValue = port.source;
+        }
+      });
+      // Remove the port from the list of ports to avoid showing it
+      ctx.current.ports.out = [];
+    }
+
+    const definition = this.definitions.find((def) => def.type === interfaceType);
+    // Remove the role attribute to avoid showing an attribute that is not defined
+    // in the component definition
+    delete ctx.current.attributes.role;
+
     let attributes = this.restoreAttributes(ctx.current.attributes, definition);
     attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
     attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
+    // Restore the attributes that are specific to the electrical interface
+    // and are dependent on the role
     attributes.push(new ComponentAttribute({
-      name: 'role',
-      value: ctx.current.role,
+      name: nameAttributeName,
+      value: nameAttributeValue,
       type: 'string',
-      definition: definition.definedAttributes.find((attribute) => attribute.name === 'role'),
+      definition: definition.definedAttributes.find(
+        (attribute) => attribute.name === nameAttributeName,
+      ),
+    }));
+    attributes.push(new ComponentAttribute({
+      name: sourceAttributeName,
+      value: sourceAttributeValue,
+      type: 'string',
+      definition: definition.definedAttributes.find(
+        (attribute) => attribute.name === sourceAttributeName,
+      ),
     }));
 
     const component = this.createComponent(
