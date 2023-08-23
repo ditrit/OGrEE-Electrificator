@@ -99,7 +99,7 @@ class ElectrificatorRenderer extends DefaultRender {
         this.parseComponent(ctx, component);
       });
 
-      const renderedFile = this.renderFileFromContext(ctx);
+      const renderedJSONFile = this.renderFileFromContext(ctx);
 
       if (ctx.warnings.length > 0) {
         console.log(`Warnings for file ${path}:`);
@@ -109,7 +109,14 @@ class ElectrificatorRenderer extends DefaultRender {
       files.push(new FileInput({
         path,
         // content: `${this.template.render({ components }).trim()}\n`,
-        content: renderedFile,
+        content: renderedJSONFile,
+      }));
+
+      const renderedAQLFile = this.renderAQLFileFromContext(ctx);
+      const aqlPath = path.replace('.json', '.aql');
+      files.push(new FileInput({
+        path: aqlPath,
+        content: renderedAQLFile,
       }));
 
       this.pluginData.emitEvent({ id, status: 'success' });
@@ -206,7 +213,8 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * For debug, render a map.
+   * Used to convert Map to JSON. It adds a dataType field to the Map object to identify it.
+   * Useful to copy objects that have Map fields.
    * @param {string} key The object key.
    * @param {any} value The object value.
    * @returns {any} The value.
@@ -222,11 +230,28 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
+   * Used to convert JSON-Converted Map (with replacer) to a Map object. It checks if the dataType field is set to Map.
+   * Useful to copy objects that have Map fields.
+   * @param {string} key The key.
+   * @param {any} value The value.
+   * @returns {Map<string, object[]>|any} The revived value.
+   */
+  reviver(key, value) {
+    if (typeof value === 'object' && value !== null) {
+      if (value.dataType === 'Map') {
+        return new Map(value.value);
+      }
+    }
+    return value;
+  }
+
+  /**
    * Render an object in hierarchical form from the rendered objects.
-   * @param {object} ctx The context of the parsing.
+   * @param {object} originalCtx The context of the parsing.
    * @returns {string} The rendered file.
    */
-  renderFileFromContext(ctx) {
+  renderFileFromContext(originalCtx) {
+    const ctx = JSON.parse(JSON.stringify(originalCtx, this.replacer), this.reviver);
     // TODO: Maybe clone the object to avoid side effects ?
     if (ctx.partiallyRendered.containers.size > 0) {
       ctx.partiallyRendered.containers.forEach((container) => {
@@ -312,80 +337,26 @@ class ElectrificatorRenderer extends DefaultRender {
       parent.links.push(link);
     });
 
-    const childrenMap = this.createContainerChildrenMap(ctx.rendered.containers);
+    const containerMap = new Map();
+    ctx.rendered.containers.forEach((container) => {
+      containerMap.set(container.name, container);
+    });
 
-    let done = false;
-    while (!done) {
-      done = true;
-      const childrenToDelete = [];
-      childrenMap.forEach((children, parentId) => {
-        if (children.size === 0) {
-          return;
-        }
-        const toDelete = [];
-        children.forEach((child) => {
-          // The child is in the map, it means it also has children of its own,
-          // do not render it yet.
-          if (childrenMap.has(child.name)) {
-            return;
-          }
-
-          // The child is not in the map, it means it has no children, render it.
-          const parent = ctx.rendered.containers.get(parentId);
-          parent.objects.push(child);
-          toDelete.push(child.name);
-        });
-        // Remove rendered children from the map.
-        toDelete.forEach((name) => {
-          children.splice(children.indexOf(name), 1);
-          if (children.length === 0) {
-            childrenToDelete.push(parentId);
-          }
-          done = false;
-        });
-      });
-      // Remove rendered parents from the map.
-      childrenToDelete.forEach((parentId) => {
-        childrenMap.delete(parentId);
-      });
-    }
-
-    // Render the root containers.
+    // Render the root containers and form the container hierarchy
     const rootContainers = [];
     ctx.rendered.containers.forEach((container) => {
       if (container.parentId === null) {
         rootContainers.push(container);
+      } else {
+        containerMap.get(container.parentId).objects.push(container);
       }
     });
 
     return JSON.stringify(rootContainers, null, 2);
   }
 
-  /**
-   * Create a Map of the children of each container.
-   * If a container has no parent, it is set as a root container.
-   * If a container has no children, it is not in the map.
-   * @param {Map<string, object>} containerMap List of containers
-   * @returns {Map<string,object>} Map of the children of each container
-   */
-  createContainerChildrenMap(containerMap) {
-    const childrenMap = new Map();
-    containerMap.forEach((container) => {
-      if (container.parentId === null) {
-        if (!childrenMap.has(container.name)) {
-          childrenMap.set(container.name, []);
-        }
-        return;
-      }
-
-      const parent = childrenMap.get(container.parentId);
-      if (parent) {
-        parent.push(container);
-      } else {
-        childrenMap.set(container.parentId, [container]);
-      }
-    });
-    return childrenMap;
+  renderAQLFileFromContext(ctx) {
+    return JSON.stringify(Array.from(ctx.rendered.devices.values()), null, 2);
   }
 
   /**
