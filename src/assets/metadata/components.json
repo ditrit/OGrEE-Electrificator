@@ -6,7 +6,7 @@
     "icon": "ContainerIcon",
     "parentTypes": ["container"],
     "childrenTypes": [
-      "container", "genericDipole", "electricalInterface", "electricalLine", "controlInterface", "controlLine",
+      "container", "genericDipole", "electricalInputInterface", "electricalOutputInterface", "electricalLine", "controlInterface", "controlLine",
       "circuitBreaker", "externalDevice", "contactor", "switch", "energyMeter", "mxCoil", "kmCoil",
       "securityKey", "transformer", "ground", "fuse", "switchDisconnector", "disconnector", "electricalSupply",
       "manualActuator", "generalActuator", "sts", "junctionBox"
@@ -55,10 +55,54 @@
       }
     ]
   },
-  "electricalInterface": {
-    "type": "electricalInterface",
+  "electricalInputInterface": {
+    "type": "electricalInputInterface",
     "model": "DefaultModel",
-    "displayName": "Electrical Interface",
+    "displayName": "Electrical Input Interface",
+    "icon": "InterfaceIcon",
+    "parentTypes": ["container"],
+    "isContainer": false,
+    "available": true,
+    "attributes": [
+      {
+        "name": "parentContainer",
+        "type": "Reference",
+        "containerRef": "container",
+        "displayName": "Parent",
+        "required": true
+      },
+      {
+        "name": "portOut",
+        "displayName": "Out",
+        "type": "Link",
+        "linkType": "Default",
+        "linkRef": "electricalLine",
+        "required": false
+      },
+      {
+        "name": "phase",
+        "displayName": "Phase",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "inputSource",
+        "displayName": "Input Source",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "inputName",
+        "displayName": "Input Name",
+        "type": "String",
+        "required": false
+      }
+    ]
+  },
+  "electricalOutputInterface": {
+    "type": "electricalOutputInterface",
+    "model": "DefaultModel",
+    "displayName": "Electrical Output Interface",
     "icon": "InterfaceIcon",
     "parentTypes": ["container"],
     "isContainer": false,
@@ -80,22 +124,20 @@
         "required": false
       },
       {
-        "name": "portOut",
-        "displayName": "Out",
-        "type": "Link",
-        "linkType": "Default",
-        "linkRef": "electricalLine",
-        "required": false
-      },
-      {
-        "name": "role",
-        "displayName": "Role",
+        "name": "phase",
+        "displayName": "Phase",
         "type": "String",
         "required": false
       },
       {
-        "name": "phase",
-        "displayName": "Phase",
+        "name": "outputSource",
+        "displayName": "Output Source",
+        "type": "String",
+        "required": false
+      },
+      {
+        "name": "outputName",
+        "displayName": "Output Name",
         "type": "String",
         "required": false
       }

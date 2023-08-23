@@ -128,7 +128,8 @@ class ElectrificatorRenderer extends DefaultRender {
       case 'container':
         this.renderContainerObject(ctx, currentComponent);
         break;
-      case 'electricalInterface':
+      case 'electricalInputInterface':
+      case 'electricalOutputInterface':
         this.renderElectricalInterface(ctx, currentComponent);
         break;
       case 'genericDipole':
@@ -673,20 +674,23 @@ class ElectrificatorRenderer extends DefaultRender {
 
   renderElectricalInterface(ctx, currentComponent) {
     let parentId = this.defaultParent;
-    let role = null;
     let portInLine = null;
     let portOutLine = null;
+    let inoutputSource = null;
+    let inoutputName = null;
     const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
       if (attribute.definition === null || attribute.definition?.name === 'phase') {
         acc[attribute.name] = attribute.value;
       } else if (attribute.definition?.name === 'parentContainer') {
         parentId = attribute.value;
-      } else if (attribute.definition?.name === 'role') {
-        role = attribute.value;
       } else if (attribute.definition?.name === 'portIn') {
         portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
       } else if (attribute.definition?.name === 'portOut') {
         portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'inputSource' || attribute.definition?.name === 'outputSource') {
+        inoutputSource = attribute.value;
+      } else if (attribute.definition?.name === 'inputName' || attribute.definition?.name === 'outputName') {
+        inoutputName = attribute.value;
       } else {
         acc[attribute.name] = attribute.value;
       }
@@ -700,22 +704,33 @@ class ElectrificatorRenderer extends DefaultRender {
       this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
     }
 
+    const ports = {
+      in: [],
+      out: [],
+    };
+
+    if (currentComponent.definition.type === 'electricalInputInterface') {
+      attributes.role = 'input';
+      ports.in.push({
+        name: 'portIn', domain: 'electrical', linkedTo: inoutputName, source: inoutputSource,
+      });
+      ports.out.push({ name: 'portOut', domain: 'electrical', linkedTo: portOutLine });
+    } else {
+      attributes.role = 'output';
+      ports.out.push({
+        name: 'portOut', domain: 'electrical', linkedTo: inoutputName, source: inoutputSource,
+      });
+      ports.in.push({ name: 'portIn', domain: 'electrical', linkedTo: portInLine });
+    }
+
     const contentDict = {
       name: currentComponent.id,
-      type: currentComponent.definition.type,
+      type: 'electricalInterface',
       parentId,
       attributes,
-      role,
       domain: 'electrical',
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-        ],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.interfaces.set(currentComponent.id, contentDict);
