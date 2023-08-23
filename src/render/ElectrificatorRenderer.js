@@ -360,8 +360,10 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Work around for the fact that the value of an object can sometime be a string or an array.
-   * Is it a bug in the renderer, the parser or Leto ? I don't know.
+   * Ancient Work around for the fact that the value of an object could sometime be
+   * a string or an array.
+   * Kept it because replacing it generated a lot of eslint warnings.
+   * TODO: remove once knowing how to fix the warnings properly.
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Current component.
    * @param {string|Array|null} linkValue The value of the link attribute
@@ -372,24 +374,7 @@ class ElectrificatorRenderer extends DefaultRender {
       return null;
     }
 
-    if (Object.prototype.toString.call(linkValue) === '[object String]') {
-      return linkValue;
-    }
-
-    if (Object.prototype.toString.call(linkValue) === '[object Array]') {
-      // HACK: Sometimes, the array contains null values. Skip them until we find a valid value.
-      let index = 0;
-      while (linkValue[index] === null && index < linkValue.length) {
-        index += 1;
-      }
-      if (index === linkValue.length) {
-        ctx.warnings.push(`Link value is invalid: "${linkValue}" for "${currentComponent.id}"`);
-        return null;
-      }
-      return linkValue[index];
-    }
-    ctx.warnings.push(`Link value is invalid: "${linkValue}" for "${currentComponent.id}"`);
-    return null;
+    return Array.isArray(linkValue) ? linkValue[0] : linkValue;
   }
 
   /**
