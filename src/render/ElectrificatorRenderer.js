@@ -1,5 +1,6 @@
 import nunjucks from 'nunjucks';
 import templates from 'src/render/ElectrificatorTemplate';
+import { ElectrificatorAQLRenderer } from 'src/render/ElectrificatorAQLRenderer';
 import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
 
 /**
@@ -112,7 +113,9 @@ class ElectrificatorRenderer extends DefaultRender {
         content: renderedJSONFile,
       }));
 
-      const renderedAQLFile = this.renderAQLFileFromContext(ctx);
+      const AQlRenderer = new ElectrificatorAQLRenderer(this.defaultParent);
+
+      const renderedAQLFile = AQlRenderer.renderAQLFileFromContext(ctx);
       const aqlPath = path.replace('.json', '.aql');
       files.push(new FileInput({
         path: aqlPath,
@@ -353,114 +356,6 @@ class ElectrificatorRenderer extends DefaultRender {
     });
 
     return JSON.stringify(rootContainers, null, 2);
-  }
-
-  /**
-   * Render an object in a flat form (interpretable by ARANGO) from the rendered objects .
-   * @param {object} originalContext The context of the parsing.
-   * @returns {string} The rendered file.
-   */
-  renderAQLFileFromContext(originalContext) {
-    const collectionName = 'test';
-    const renderedAQLObjects = [];
-    const renderedAQLLinks = [];
-    const ctx = JSON.parse(JSON.stringify(originalContext, this.replacer), this.reviver);
-
-    ctx.rendered.containers.set(this.defaultParent, {
-      name: this.defaultParent,
-      parentId: null,
-      type: 'container',
-      attributes: {},
-      domain: 'general',
-      description: [],
-    });
-
-    ctx.rendered.devices.forEach((device) => {
-      if (device.parentId === null) {
-        device.parentId = this.defaultParent;
-        ctx.warnings.push(`Device ${device.name} has no parent: set to ${this.defaultParent}`);
-      }
-
-      const parent = ctx.rendered.containers.get(device.parentId);
-      if (parent === undefined) {
-        ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to ${this.defaultParent}`);
-        device.parentId = this.defaultParent;
-      } else {
-        renderedAQLLinks.push(`{_from:"${device.name}", _to:"${device.parentId}", type: "parent"}`);
-      }
-
-      Object.values(device.ports).forEach((portType) => {
-        portType.forEach((port) => {
-          delete port.linkedTo;
-        });
-      });
-
-      renderedAQLObjects.push(`${JSON.stringify(device)}`);
-    });
-
-    ctx.rendered.containers.forEach((container) => {
-      if (container.parentId === null) {
-        container.parentId = this.defaultParent;
-        ctx.warnings.push(`Container ${container.name} has no parent: set to ${this.defaultParent}`);
-      }
-
-      const parent = ctx.rendered.containers.get(container.parentId);
-      if (parent === undefined) {
-        ctx.warnings.push(`Container ${container.name} parent is invalid ${container.parentId}: set to ${this.defaultParent}`);
-        container.parentId = this.defaultParent;
-      } else {
-        renderedAQLLinks.push(`{_from:"${container.name}", _to:"${container.parentId}", type: "parent"}`);
-      }
-
-      renderedAQLObjects.push(`${JSON.stringify(container)}`);
-    });
-
-    ctx.rendered.interfaces.forEach((inter) => {
-      if (inter.parentId === null) {
-        inter.parentId = this.defaultParent;
-        ctx.warnings.push(`Interface ${inter.name} has no parent: set to ${this.defaultParent}`);
-      }
-
-      const parent = ctx.rendered.containers.get(inter.parentId);
-      if (parent === undefined) {
-        ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to ${this.defaultParent}`);
-        inter.parentId = this.defaultParent;
-      } else {
-        renderedAQLLinks.push(`{_from:"${inter.name}", _to:"${inter.parentId}", type: "parent"}`);
-      }
-
-      Object.values(inter.ports).forEach((portType) => {
-        portType.forEach((port) => {
-          delete port.linkedTo;
-        });
-      });
-
-      renderedAQLObjects.push(`${JSON.stringify(inter)}`);
-    });
-
-    ctx.rendered.links.forEach((link) => {
-      if (link.parentId === null) {
-        link.parentId = this.defaultParent;
-        ctx.warnings.push(`Link ${link.name} has no parent: set to ${this.defaultParent}`);
-      }
-
-      const parent = ctx.rendered.containers.get(link.parentId);
-      if (parent === undefined) {
-        ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to ${this.defaultParent}`);
-        link.parentId = this.defaultParent;
-      } else {
-        renderedAQLLinks.push(`{_from:"${link.name}", _to:"${link.parentId}", type: "parent"}`);
-      }
-      renderedAQLObjects.push(`${JSON.stringify(link)}`);
-
-      link.ports.in.forEach((port) => {
-        renderedAQLLinks.push(`{_from:"${port.name}", _to:"${link.name}", type: "connection"}`);
-      });
-      link.ports.out.forEach((port) => {
-        renderedAQLLinks.push(`{_from:"${link.name}", _to:"${port.name}", type: "connection"}`);
-      });
-    });
-    return `INSERT ${renderedAQLObjects.concat(renderedAQLLinks).join('\n')} IN ${collectionName}`;
   }
 
   /**
