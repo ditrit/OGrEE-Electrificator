@@ -1,12 +1,24 @@
+import { FileInput } from 'leto-modelizer-plugin-core';
+
 class ElectrificatorAQLRenderer {
-  documentCollectionName = 'objects';
+  rendered = {
+    objects: {
+      collection: 'objects',
+      documents: [],
+    },
+    parentEdges: {
+      collection: 'parentHoodEdges',
+      documents: [],
+    },
+    connectionEdges: {
+      collection: 'connectionEdges',
+      documents: [],
+    },
+  };
 
-  connectionEdgeCollectionName = 'connectionEdges';
-
-  parentEdgeCollectionName = 'parentHoodEdges';
-
-  constructor(defaultParent = 'stray') {
+  constructor(path, defaultParent = 'stray') {
     this.defaultParent = defaultParent;
+    this.path = path.replace('.json', '');
   }
 
   /**
@@ -49,9 +61,19 @@ class ElectrificatorAQLRenderer {
    * @param {string} documentCollectionName The name of the document collection.
    * @returns {string} The rendered query document.
    */
-  renderAQLDocument(document, documentCollectionName) {
+  renderAQLDocumentINSERTQuery(document, documentCollectionName) {
     document._key = document.name;
     return `INSERT ${JSON.stringify(document)} INTO ${documentCollectionName}`;
+  }
+
+  /**
+   * Render a container object into an insert query.
+   * @param {object} document The document to render.
+   * @returns {string} The rendered query document.
+   */
+  renderAQLDocument(document) {
+    document._key = document.name;
+    return `${JSON.stringify(document)}`;
   }
 
   /**
@@ -61,18 +83,25 @@ class ElectrificatorAQLRenderer {
    * @param {string} edgeCollectionName The name of the edge collection.
    * @returns {string} The rendered query edge.
    */
-  renderAQLEdge(from, to, edgeCollectionName) {
-    return `INSERT {_from:"${this.documentCollectionName}/${from}", _to:"${this.documentCollectionName}/${to}"} INTO ${edgeCollectionName}`;
+  renderAQLEdgeINSERTQuery(from, to, edgeCollectionName) {
+    return `INSERT {_from:"${this.rendered.objects.collection}/${from}", _to:"${this.rendered.objects.collection}/${to}"} INTO ${edgeCollectionName}`;
+  }
+
+  /**
+   * Render a link object into an insert query.
+   * @param {string} from The name of the source object.
+   * @param {string} to The name of the destination object.
+   * @returns {string} The rendered query edge.
+   */
+  renderAQLEdge(from, to) {
+    return `{"_from":"${this.rendered.objects.collection}/${from}", "_to":"${this.rendered.objects.collection}/${to}"}`;
   }
 
   /**
    * Render an object in a flat form (interpretable by ARANGO) from the rendered objects .
    * @param {object} originalContext The context of the parsing.
-   * @returns {string} The rendered file.
    */
-  renderAQLFileFromContext(originalContext) {
-    const renderedAQLObjects = [];
-    const renderedAQLLinks = [];
+  renderAQLFromContext(originalContext) {
     const ctx = JSON.parse(JSON.stringify(originalContext, this.replacer), this.reviver);
 
     ctx.rendered.containers.set(this.defaultParent, {
@@ -95,10 +124,9 @@ class ElectrificatorAQLRenderer {
         ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to ${this.defaultParent}`);
         device.parentId = this.defaultParent;
       } else {
-        renderedAQLLinks.push(this.renderAQLEdge(
+        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
           device.name,
           device.parentId,
-          this.parentEdgeCollectionName,
         ));
       }
 
@@ -108,7 +136,7 @@ class ElectrificatorAQLRenderer {
         });
       });
 
-      renderedAQLObjects.push(this.renderAQLDocument(device, this.documentCollectionName));
+      this.rendered.objects.documents.push(this.renderAQLDocument(device));
     });
 
     ctx.rendered.containers.forEach((container) => {
@@ -117,14 +145,13 @@ class ElectrificatorAQLRenderer {
         ctx.warnings.push(`Container ${container.name} parent is invalid ${container.parentId}: set to ${null}`);
         container.parentId = null;
       } else {
-        renderedAQLLinks.push(this.renderAQLEdge(
+        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
           container.name,
           container.parentId,
-          this.parentEdgeCollectionName,
         ));
       }
 
-      renderedAQLObjects.push(this.renderAQLDocument(container, this.documentCollectionName));
+      this.rendered.objects.documents.push(this.renderAQLDocument(container));
     });
 
     ctx.rendered.interfaces.forEach((inter) => {
@@ -138,10 +165,9 @@ class ElectrificatorAQLRenderer {
         ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to ${this.defaultParent}`);
         inter.parentId = this.defaultParent;
       } else {
-        renderedAQLLinks.push(this.renderAQLEdge(
+        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
           inter.name,
           inter.parentId,
-          this.parentEdgeCollectionName,
         ));
       }
 
@@ -151,7 +177,7 @@ class ElectrificatorAQLRenderer {
         });
       });
 
-      renderedAQLObjects.push(this.renderAQLDocument(inter, this.documentCollectionName));
+      this.rendered.objects.documents.push(this.renderAQLDocument(inter));
     });
 
     ctx.rendered.links.forEach((link) => {
@@ -165,30 +191,36 @@ class ElectrificatorAQLRenderer {
         ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to ${this.defaultParent}`);
         link.parentId = this.defaultParent;
       } else {
-        renderedAQLLinks.push(this.renderAQLEdge(
+        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
           link.name,
           link.parentId,
-          this.parentEdgeCollectionName,
         ));
       }
-      renderedAQLObjects.push(this.renderAQLDocument(link, this.documentCollectionName));
+      this.rendered.objects.documents.push(this.renderAQLDocument(link));
 
       link.ports.in.forEach((port) => {
-        renderedAQLLinks.push(this.renderAQLEdge(
-          port.name,
-          link.name,
-          this.connectionEdgeCollectionName,
-        ));
+        this.rendered.connectionEdges.documents.push(this.renderAQLEdge(port.name, link.name));
       });
       link.ports.out.forEach((port) => {
-        renderedAQLLinks.push(this.renderAQLEdge(
-          link.name,
-          port.name,
-          this.connectionEdgeCollectionName,
-        ));
+        this.rendered.connectionEdges.documents.push(this.renderAQLEdge(link.name, port.name));
       });
     });
-    return `${renderedAQLObjects.concat(renderedAQLLinks).join('\n')}`;
+  }
+
+  /**
+   * Generate JSON files importable using arangoimport from the rendered objects.
+   * @param {object} originalContext The context of the parsing.
+   * @returns {FileInput[]} The generated files.
+   */
+  generateAQLFilesFromContext(originalContext) {
+    this.renderAQLFromContext(originalContext);
+    const files = [];
+    Object.values(this.rendered).forEach((collection) => files.push(new FileInput({
+      path: `${this.path}_${collection.collection}.jsonl`,
+      content: collection.documents.join('\n'),
+    })));
+
+    return files;
   }
 }
 

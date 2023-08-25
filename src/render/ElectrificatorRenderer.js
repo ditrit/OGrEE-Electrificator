@@ -113,14 +113,9 @@ class ElectrificatorRenderer extends DefaultRender {
         content: renderedJSONFile,
       }));
 
-      const AQlRenderer = new ElectrificatorAQLRenderer(this.defaultParent);
-
-      const renderedAQLFile = AQlRenderer.renderAQLFileFromContext(ctx);
-      const aqlPath = path.replace('.json', '.aql');
-      files.push(new FileInput({
-        path: aqlPath,
-        content: renderedAQLFile,
-      }));
+      const AQlRenderer = new ElectrificatorAQLRenderer(path, this.defaultParent);
+      const renderedAQLFile = AQlRenderer.generateAQLFilesFromContext(ctx);
+      renderedAQLFile.forEach((file) => files.push(file));
 
       this.pluginData.emitEvent({ id, status: 'success' });
     });
