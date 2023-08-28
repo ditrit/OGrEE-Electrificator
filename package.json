@@ -1,7 +1,7 @@
 {
-  "name": "electrificator",
+  "name": "electrificator-plugin",
   "version": "0.1.0",
-  "description": "Template for plugin creation",
+  "description": "A Leto Modelizer Plugin to render electrical schema.",
   "main": "dist/electrificatorPlugin.js",
   "exports": "./dist/electrificatorPlugin.js",
   "scripts": {
@@ -17,18 +17,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ditrit/leto-modelizer-plugin-template.git"
+    "url": "git+https://github.com/ditrit/electrificator-plugin.git"
   },
   "keywords": [
     "Leto-modelizer",
-    "plugin-template"
+    "electrificator",
+    "Electrical schema modelizer"
   ],
   "author": "Vincent Moittie <moittie.vincent@gmail.com>",
   "license": "Mozilla Public License 2.0",
   "bugs": {
-    "url": "https://github.com/ditrit/leto-modelizer-plugin-template/issues"
+    "url": "https://github.com/ditrit/electrificator-plugin/issues"
   },
-  "homepage": "https://github.com/ditrit/leto-modelizer-plugin-template#readme",
+  "homepage": "https://github.com/ditrit/electrificator-plugin#readme",
   "dependencies": {
     "leto-modelizer-plugin-core": "github:ditrit/leto-modelizer-plugin-core#0.18.0",
     "nunjucks": "^3.2.4"
