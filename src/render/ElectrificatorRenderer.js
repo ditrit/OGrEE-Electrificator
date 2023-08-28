@@ -97,7 +97,7 @@ class ElectrificatorRenderer extends DefaultRender {
       };
 
       components.forEach((component) => {
-        this.parseComponent(ctx, component);
+        this.renderComponent(ctx, component);
       });
 
       const renderedJSONFile = this.renderFileFromContext(ctx);
@@ -128,7 +128,7 @@ class ElectrificatorRenderer extends DefaultRender {
    * @param {object} ctx - The context of the parsing.
    * @param {Component} currentComponent - Current component.
    */
-  parseComponent(ctx, currentComponent) {
+  renderComponent(ctx, currentComponent) {
     switch (currentComponent?.definition.type) {
       case 'container':
         this.renderContainerObject(ctx, currentComponent);
