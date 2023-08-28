@@ -42,8 +42,6 @@ class ElectrificatorRenderer extends DefaultRender {
      *
      * Components can be find in `this.pluginData.components`.
      */
-    // return []; // Return FileInput[].
-
     return this.generateFilesFromComponentsMap(
       this.pluginData.components.reduce(
         (map, component) => {
@@ -103,8 +101,7 @@ class ElectrificatorRenderer extends DefaultRender {
       const renderedJSONFile = this.renderFileFromContext(ctx);
 
       if (ctx.warnings.length > 0) {
-        console.log(`Warnings for file ${path}:`);
-        console.log(ctx.warnings);
+        console.log(`Warnings for file ${path}:`, ctx.warnings);
       }
 
       files.push(new FileInput({

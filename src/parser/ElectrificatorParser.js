@@ -23,7 +23,6 @@ class ElectrificatorParser extends DefaultParser {
    * @returns {string[]} List of folder paths that represent a model.
    */
   getModels(files = []) {
-    console.log(files);
     return files.filter((file) => this.isParsable(file))
       .reduce((acc, file) => {
         const model = file.path.split('/').slice(0, -1).join('/');
@@ -101,7 +100,7 @@ class ElectrificatorParser extends DefaultParser {
           progress,
         );
       } catch (e) {
-        console.log(progress);
+        console.log('Error during parsing. Progress:', progress);
         console.log(e);
       }
       listener.components.forEach((component) => this.pluginData.components.push(component));

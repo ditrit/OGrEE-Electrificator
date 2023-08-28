@@ -12,8 +12,7 @@ import { name, version } from 'package.json';
 class ElectrificatorPlugin extends DefaultPlugin {
   /**
    * Default constructor.
-   *
-   * @param props
+   * @param {object} props - All properties to set.
    */
   constructor(props = {
     event: null,

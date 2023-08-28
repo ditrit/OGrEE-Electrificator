@@ -6,7 +6,6 @@ import { DefaultConfiguration, Tag } from 'leto-modelizer-plugin-core';
 class ElectrificatorConfiguration extends DefaultConfiguration {
   /**
    * Default constructor.
-   *
    * @param {object} [props] - Object that contains all properties to set.
    */
   constructor(props = { editor: null }) {
