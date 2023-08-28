@@ -1,3 +1,7 @@
+// TODO: This template has been imported AS-IS from the terrator-plugin.
+// It isn't currently used in the electrificator plugin.
+// Maybe use nunjucks to simplify the rendering in the future.
+
 const root = `{% for _block in components %}
 {{ _block.definition.blockType }} {% if ['resource','data'].includes(_block.definition.blockType) %}"{{ _block.definition.type }}" {% endif %}{% if ['provider', 'module'].includes(_block.definition.blockType) %}"{{ _block.definition.type }}"{% else %}"{{ _block.id }}"{% endif %} {
 {% for attribute in _block.attributes %}{% set level = 1 %}
