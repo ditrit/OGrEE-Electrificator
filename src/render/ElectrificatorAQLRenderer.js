@@ -16,9 +16,22 @@ class ElectrificatorAQLRenderer {
     },
   };
 
-  constructor(path, defaultParent = 'stray') {
+  constructor(pluginData, path, defaultParent = 'stray') {
+    this.pluginData = pluginData;
     this.defaultParent = defaultParent;
     this.path = path.replace('.json', '');
+
+    this.pluginData.variables.forEach((variable) => {
+      if (variable.name === 'objectsCollection') {
+        this.rendered.objects.collection = variable.value;
+      } else if (variable.name === 'connectionEdgesCollection') {
+        this.rendered.connectionEdges.collection = variable.value;
+      } else if (variable.name === 'parentEdgesCollection') {
+        this.rendered.parentEdges.collection = variable.value;
+      } else {
+        throw new Error(`Unknown variable ${variable.name}`);
+      }
+    });
   }
 
   /**

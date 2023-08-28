@@ -110,7 +110,7 @@ class ElectrificatorRenderer extends DefaultRender {
         content: renderedJSONFile,
       }));
 
-      const AQlRenderer = new ElectrificatorAQLRenderer(path, this.defaultParent);
+      const AQlRenderer = new ElectrificatorAQLRenderer(this.pluginData, path, this.defaultParent);
       const renderedAQLFile = AQlRenderer.generateAQLFilesFromContext(ctx);
       renderedAQLFile.forEach((file) => files.push(file));
 

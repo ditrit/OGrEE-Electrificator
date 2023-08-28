@@ -1,4 +1,4 @@
-import { DefaultParser } from 'leto-modelizer-plugin-core';
+import { DefaultParser, Variable } from 'leto-modelizer-plugin-core';
 import { ElectrificatorListener } from 'src/parser/ElectrificatorListener';
 
 /**
@@ -106,6 +106,37 @@ class ElectrificatorParser extends DefaultParser {
       listener.components.forEach((component) => this.pluginData.components.push(component));
       this.pluginData.emitEvent({ id, status: 'success' });
     });
+
+    this.pluginData.variables = this.getIndependentVariables();
+  }
+
+  /**
+   * Return the lost of the plugin fixed variables.
+   * Currently used for ArangoDB collections names.
+   * TODO: Update if necessary once variables are editable in the UI.
+   * @returns {Variable[]} A list of fixed variables.
+   */
+  getIndependentVariables() {
+    return [
+      new Variable({
+        name: 'objectsCollection',
+        value: 'objects',
+        type: 'String',
+        category: 'ArangoDBCollection',
+      }),
+      new Variable({
+        name: 'connectionEdgesCollection',
+        value: 'connectionEdges',
+        type: 'String',
+        category: 'ArangoDBCollection',
+      }),
+      new Variable({
+        name: 'parentEdgesCollection',
+        value: 'parentEdges',
+        type: 'String',
+        category: 'ArangoDBCollection',
+      }),
+    ];
   }
 
   /**
@@ -118,7 +149,7 @@ class ElectrificatorParser extends DefaultParser {
   parseFile(srcData, listener, path, prog) {
     const data = JSON.parse(srcData);
 
-    if (Object.prototype.toString.call(data) === '[object Array]') {
+    if (Array.isArray(data)) {
       Object.values(data).forEach((value) => {
         this.parseObject(value, listener, path, prog);
       });
