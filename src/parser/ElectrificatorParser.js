@@ -2,18 +2,19 @@ import { DefaultParser, Variable } from 'leto-modelizer-plugin-core';
 import { ElectrificatorListener } from 'src/parser/ElectrificatorListener';
 
 /**
- * Template of plugin parser.
+ * The plugin parser. It parses our self-defined JSON format into
+ * Leto Modelizer components that will be drawn.
+ * It handles the switch from the "Text" tab to the "Draw" tab.
  */
 class ElectrificatorParser extends DefaultParser {
+  /**
+   * Check if the file is parsable by this parser.
+   * The parsable file formats are:
+   *   - JSON.
+   * @param {FileInformation} fileInformation - File information.
+   * @returns {boolean} True if the file is parsable, false otherwise.
+   */
   isParsable(fileInformation) {
-    /*
-     * Implement this to indicate which fileInformation your provider can manage.
-     *
-     * You just have to return a Boolean to say if your parser can manage the file or not.
-     *
-     * By default, this function return false only on null/undefined fileInformation.
-     */
-    // return super.isParsable(fileInformation);
     return /^.*\.json$/.test(fileInformation.path);
   }
 

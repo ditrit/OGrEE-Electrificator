@@ -12,7 +12,8 @@ const PACKAGE_NAME = packageInfo.name;
 const PACKAGE_VERSION = packageInfo.version;
 
 /**
- * Template of plugin model.
+ * The plugin class that gathers all the plugin components.
+ * This class is the one that will be exported and used by Leto Modelizer.
  */
 class ElectrificatorPlugin extends DefaultPlugin {
   /**

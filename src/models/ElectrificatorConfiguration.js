@@ -1,7 +1,11 @@
 import { DefaultConfiguration, Tag } from 'leto-modelizer-plugin-core';
 
 /**
- * Electrificator configuration.
+ * The plugin configuration. It defines:
+ *  - The default file name.
+ *  - The default file extension.
+ *  - The editor syntax.
+ *  - The tags.
  */
 class ElectrificatorConfiguration extends DefaultConfiguration {
   /**
@@ -13,7 +17,8 @@ class ElectrificatorConfiguration extends DefaultConfiguration {
       ...props,
       editor: {
         ...props.editor,
-        // TODO: Define syntax
+        // We do not need to define a syntax,
+        // JSON is automatically recognized by Leto
         syntax: null,
       },
       tags: [
