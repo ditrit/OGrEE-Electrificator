@@ -127,14 +127,97 @@ class ElectrificatorListener {
   }
 
   /**
-   * Restore a generic dipole with a control line.
-   * It is used for the "circuitBreaker" component, the "contactor" component and so on.
+   * Generic function to parse an interface (electrical or control).
+   * The interface must have a role attribute that indicates if it is an input or an output.
+   * It also has to have its ports named "inputName" and "inputSource" for an input interface
+   * and "outputName" and "outputSource" for an output interface.
    * @param {object} ctx The parsing context.
+   * @param {string} inputInterfaceType The type of the input interface.
+   * @param {string} outputInterfaceType The type of the output interface.
    */
-  createActionableDipole(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+  restore_genericInterface(ctx, inputInterfaceType, outputInterfaceType) {
+    let interfaceType = '';
+    let nameAttributeName = '';
+    let sourceAttributeName = '';
+    let nameAttributeValue = '';
+    let sourceAttributeValue = '';
+    // This is a workaround to indicate to search in another file for a specific interface.
+    // TODO: Find a way to directly reference the other interface.
+    if (ctx.current.attributes.role === 'input') {
+      interfaceType = inputInterfaceType;
+      nameAttributeName = 'inputName';
+      sourceAttributeName = 'inputSource';
+      ctx.current.ports.in.forEach((port) => {
+        if (port.linkedTo !== null) {
+          nameAttributeValue = port.linkedTo;
+          sourceAttributeValue = port.source;
+        }
+      });
+      // Remove the port from the list of ports to avoid showing it
+      ctx.current.ports.in = [];
+    } else if (ctx.current.attributes.role === 'output') {
+      interfaceType = outputInterfaceType;
+      nameAttributeName = 'outputName';
+      sourceAttributeName = 'outputSource';
+      ctx.current.ports.out.forEach((port) => {
+        if (port.linkedTo !== null) {
+          nameAttributeValue = port.linkedTo;
+          sourceAttributeValue = port.source;
+        }
+      });
+      // Remove the port from the list of ports to avoid showing it
+      ctx.current.ports.out = [];
+    } else {
+      ctx.progress.warnings.push({
+        code: 'invalid_interface_role',
+        message: `Invalid interface role: ${ctx.current.attributes.role} for component ${ctx.current.name}`,
+      });
+      return;
+    }
+
+    const definition = this.definitions.find((def) => def.type === interfaceType);
+    // Remove the role attribute to avoid showing an attribute that is not defined
+    // in the component definition
+    delete ctx.current.attributes.role;
+
     let attributes = this.restoreAttributes(ctx.current.attributes, definition);
     attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
+    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
+
+    // Restore the attributes that are specific to the electrical interface
+    // and are dependent on the role
+    attributes.push(new ComponentAttribute({
+      name: nameAttributeName,
+      value: nameAttributeValue,
+      type: 'string',
+      definition: definition.definedAttributes.find(
+        (attribute) => attribute.name === nameAttributeName,
+      ),
+    }));
+    attributes.push(new ComponentAttribute({
+      name: sourceAttributeName,
+      value: sourceAttributeValue,
+      type: 'string',
+      definition: definition.definedAttributes.find(
+        (attribute) => attribute.name === sourceAttributeName,
+      ),
+    }));
+
+    const component = this.createComponent(
+      ctx.current.name,
+      definition,
+      attributes,
+    );
+    this.components.push(component);
+  }
+
+  /**
+   * Restore a generic line.
+   * @param {object} ctx The parsing context.
+   */
+  restore_genericLine(ctx) {
+    const definition = this.definitions.find((def) => def.type === ctx.current.type);
+    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
     attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
 
     const component = this.createComponent(
@@ -162,8 +245,9 @@ class ElectrificatorListener {
   }
 
   /**
-   * Create a generic dipole. Can be used for other components that have the same interface
-   * as a generic dipole.
+   * Create a generic dipole.
+   * Can be used for other components that have the same interface as a generic dipole.
+   * The component must have a name, a type and a parent id.
    * @param {object} ctx The parsing context.
    */
   enter_genericDipole(ctx) {
@@ -183,69 +267,7 @@ class ElectrificatorListener {
   exit_genericDipole() {}
 
   enter_electricalInterface(ctx) {
-    let interfaceType = 'electricalOutputInterface';
-    let nameAttributeName = 'outputName';
-    let sourceAttributeName = 'outputSource';
-    let nameAttributeValue = '';
-    let sourceAttributeValue = '';
-    // Workaround to indicate to search in another file for a specific interface
-    if (ctx.current.attributes.role === 'input') {
-      interfaceType = 'electricalInputInterface';
-      nameAttributeName = 'inputName';
-      sourceAttributeName = 'inputSource';
-      ctx.current.ports.in.forEach((port) => {
-        if (port.linkedTo !== null) {
-          nameAttributeValue = port.linkedTo;
-          sourceAttributeValue = port.source;
-        }
-      });
-      // Remove the port from the list of ports to avoid showing it
-      ctx.current.ports.in = [];
-    } else {
-      ctx.current.ports.out.forEach((port) => {
-        if (port.linkedTo !== null) {
-          nameAttributeValue = port.linkedTo;
-          sourceAttributeValue = port.source;
-        }
-      });
-      // Remove the port from the list of ports to avoid showing it
-      ctx.current.ports.out = [];
-    }
-
-    const definition = this.definitions.find((def) => def.type === interfaceType);
-    // Remove the role attribute to avoid showing an attribute that is not defined
-    // in the component definition
-    delete ctx.current.attributes.role;
-
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    // Restore the attributes that are specific to the electrical interface
-    // and are dependent on the role
-    attributes.push(new ComponentAttribute({
-      name: nameAttributeName,
-      value: nameAttributeValue,
-      type: 'string',
-      definition: definition.definedAttributes.find(
-        (attribute) => attribute.name === nameAttributeName,
-      ),
-    }));
-    attributes.push(new ComponentAttribute({
-      name: sourceAttributeName,
-      value: sourceAttributeValue,
-      type: 'string',
-      definition: definition.definedAttributes.find(
-        (attribute) => attribute.name === sourceAttributeName,
-      ),
-    }));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.restore_genericInterface(ctx, 'electricalInputInterface', 'electricalOutputInterface');
   }
 
   exit_electricalInterface() {
@@ -253,105 +275,25 @@ class ElectrificatorListener {
   }
 
   enter_electricalLine(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.restore_genericLine(ctx);
   }
 
   exit_electricalLine() {}
 
   enter_controlInterface(ctx) {
-    let interfaceType = 'controlOutputInterface';
-    let nameAttributeName = 'outputName';
-    let sourceAttributeName = 'outputSource';
-    let nameAttributeValue = '';
-    let sourceAttributeValue = '';
-    // Workaround to indicate to search in another file for a specific interface
-    if (ctx.current.attributes.role === 'input') {
-      interfaceType = 'controlInputInterface';
-      nameAttributeName = 'inputName';
-      sourceAttributeName = 'inputSource';
-      ctx.current.ports.in.forEach((port) => {
-        if (port.linkedTo !== null) {
-          nameAttributeValue = port.linkedTo;
-          sourceAttributeValue = port.source;
-        }
-      });
-      // Remove the port from the list of ports to avoid showing it
-      ctx.current.ports.in = [];
-    } else {
-      ctx.current.ports.out.forEach((port) => {
-        if (port.linkedTo !== null) {
-          nameAttributeValue = port.linkedTo;
-          sourceAttributeValue = port.source;
-        }
-      });
-      // Remove the port from the list of ports to avoid showing it
-      ctx.current.ports.out = [];
-    }
-
-    const definition = this.definitions.find((def) => def.type === interfaceType);
-    // Remove the role attribute to avoid showing an attribute that is not defined
-    // in the component definition
-    delete ctx.current.attributes.role;
-
-    let attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes = attributes.concat(this.restorePorts(ctx.current.ports, definition));
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    // Restore the attributes that are specific to the electrical interface
-    // and are dependent on the role
-    attributes.push(new ComponentAttribute({
-      name: nameAttributeName,
-      value: nameAttributeValue,
-      type: 'string',
-      definition: definition.definedAttributes.find(
-        (attribute) => attribute.name === nameAttributeName,
-      ),
-    }));
-    attributes.push(new ComponentAttribute({
-      name: sourceAttributeName,
-      value: sourceAttributeValue,
-      type: 'string',
-      definition: definition.definedAttributes.find(
-        (attribute) => attribute.name === sourceAttributeName,
-      ),
-    }));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.restore_genericInterface(ctx, 'controlInputInterface', 'controlOutputInterface');
   }
 
   exit_controlInterface() {}
 
   enter_controlLine(ctx) {
-    const definition = this.definitions.find((def) => def.type === ctx.current.type);
-    const attributes = this.restoreAttributes(ctx.current.attributes, definition);
-    attributes.push(this.restoreParentContainer(definition, ctx.current.parentId));
-
-    const component = this.createComponent(
-      ctx.current.name,
-      definition,
-      attributes,
-    );
-    this.components.push(component);
+    this.restore_genericLine(ctx);
   }
 
   exit_controlLine() {}
 
   enter_circuitBreaker(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_circuitBreaker() {}
@@ -363,13 +305,13 @@ class ElectrificatorListener {
   exit_externalDevice() {}
 
   enter_contactor(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_contactor() {}
 
   enter_switch(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_switch() {}
@@ -405,19 +347,19 @@ class ElectrificatorListener {
   exit_ground() {}
 
   enter_fuse(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_fuse() {}
 
   enter_switchDisconnector(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_switchDisconnector() {}
 
   enter_disconnector(ctx) {
-    this.createActionableDipole(ctx);
+    this.enter_genericDipole(ctx);
   }
 
   exit_disconnector() {}

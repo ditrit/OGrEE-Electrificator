@@ -175,6 +175,7 @@ class ElectrificatorParser extends DefaultParser {
     }
     const context = {
       current: srcObject,
+      progress: prog,
     };
 
     switch (srcObject.type) {
