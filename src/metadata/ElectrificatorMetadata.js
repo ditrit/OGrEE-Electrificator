@@ -1,20 +1,43 @@
+import Ajv from 'ajv';
 import {
   DefaultMetadata, ComponentDefinition, ComponentAttributeDefinition,
 } from 'leto-modelizer-plugin-core';
 
 import metadata from 'src/assets/metadata/index.js';
+import { MetadataValidationSchema } from 'src/assets/metadata/validation/index.js';
 
-/*
- * Metadata is used to generate definition of Component and ComponentAttribute.
- *
- * In our plugin managing Terraform, we use [Ajv](https://ajv.js.org/) to validate metadata.
- * And we provide a `metadata.json` to define all metadata.
- *
- * Feel free to manage your metadata as you wish.
+/**
+ * Metadata is used to generate definition of Component and ComponentAttribute of the plugin
  */
 class ElectrificatorMetadata extends DefaultMetadata {
+  constructor(pluginData) {
+    super(pluginData);
+    this.ajv = new Ajv();
+    this.schema = MetadataValidationSchema;
+    // this.getAttributeDefinition = this.getAttributeDefinition.bind(this);
+  }
+
+  /**
+   * Validate the provided metadata with a schemas.
+   * @returns {boolean} True if metadata is valid.
+   */
   validate() {
-    return super.validate();
+    const errors = [];
+    const validate = this.ajv.compile(this.schema);
+    Object.entries(metadata).forEach((metadataName, metadataValue) => {
+      if (!validate(metadataValue)) {
+        errors.push({
+          metadataName,
+          errors: validate.errors,
+        });
+      }
+    });
+
+    if (errors.length > 0) {
+      throw new Error('Metadata are not valid', { cause: errors });
+    }
+
+    return true;
   }
 
   /**
