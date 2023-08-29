@@ -1,5 +1,3 @@
-import nunjucks from 'nunjucks';
-import templates from 'src/render/ElectrificatorTemplate';
 import { ElectrificatorAQLRenderer } from 'src/render/ElectrificatorAQLRenderer';
 import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
 
@@ -7,25 +5,11 @@ import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
  * Template of plugin renderer.
  */
 class ElectrificatorRenderer extends DefaultRender {
+  // Terrator uses nunjucks to render the files.
+  // It isn't currently used in this plugin.
+  // TODO : Evaluate if it is possible and useful to use it.
+
   defaultParent = 'stray';
-
-  constructor(pluginData) {
-    super(pluginData);
-
-    const Loader = nunjucks.Loader.extend({
-      getSource(name) {
-        return {
-          src: templates[name],
-        };
-      },
-    });
-    const env = new nunjucks.Environment(new Loader(), {
-      autoescape: false,
-      trimBlocks: true,
-      lstripBlocks: true,
-    });
-    this.template = nunjucks.compile(templates.root, env);
-  }
 
   /**
    * Convert all provided components and links in files.
