@@ -370,141 +370,6 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Render container object.
-   * @param {object} ctx The context of the parsing.
-   * @param {Component} currentComponent Current component.
-   */
-  renderGenericDipole(ctx, currentComponent) {
-    let parent = this.defaultParent;
-    let portInLine = null;
-    let portOutLine = null;
-    const attributes = {};
-    currentComponent?.attributes.forEach((attribute) => {
-      if (attribute.definition?.name === 'parentContainer') {
-        parent = attribute.value;
-      } else if (attribute.definition?.name === 'portIn') {
-        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
-      } else if (attribute.definition?.name === 'portOut') {
-        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
-      } else {
-        attributes[attribute.name] = attribute.value;
-      }
-    });
-
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
-    }
-    if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
-    }
-
-    const contentDict = {
-      name: currentComponent.id,
-      attributes,
-      type: currentComponent.definition.type,
-      domain: 'electrical',
-      category: 'device',
-      parentId: parent,
-      description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-        ],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
-        ],
-      },
-    };
-
-    ctx.rendered.devices.set(currentComponent.id, contentDict);
-  }
-
-  /**
-   * Render an actionable dipole object.
-   * Used for circuit breaker, contactor, etc. That behaves the same way.
-   * @param {object} ctx The parsing context.
-   * @param {Component} currentComponent  Current component.
-   */
-  renderActionableDipole(ctx, currentComponent) {
-    let parent = this.defaultParent;
-    let portInLine = null;
-    let portOutLine = null;
-    let portControlLine = null;
-    const attributes = {};
-    currentComponent?.attributes.forEach((attribute) => {
-      if (attribute.definition?.name === 'parentContainer') {
-        parent = attribute.value;
-      } else if (attribute.definition?.name === 'portIn') {
-        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
-      } else if (attribute.definition?.name === 'portOut') {
-        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
-      } else if (attribute.definition?.name === 'portControl') {
-        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
-      } else {
-        attributes[attribute.name] = attribute.value;
-      }
-    });
-
-    const contentDict = {
-      name: currentComponent.id,
-      attributes,
-      type: currentComponent.definition.type,
-      domain: 'electrical',
-      category: 'device',
-      parentId: parent,
-      description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-          { name: 'portControl', domain: 'control', linkedTo: portControlLine },
-        ],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
-        ],
-      },
-    };
-
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
-    }
-    if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
-    }
-    if (portControlLine !== null) {
-      this.makeConnectionInput(ctx, portControlLine, currentComponent.id, 'portControl', 'control');
-    }
-
-    ctx.rendered.devices.set(currentComponent.id, contentDict);
-  }
-
-  /**
-   * Render circuit breaker object.
-   * @param {object} ctx The context of the parsing.
-   * @param {Component} currentComponent Current component.
-   */
-  renderCircuitBreaker(ctx, currentComponent) {
-    this.renderActionableDipole(ctx, currentComponent);
-  }
-
-  /**
-   * Render contactor object.
-   * @param {object} ctx The parsing context.
-   * @param {Component} currentComponent Current component.
-   */
-  renderContactor(ctx, currentComponent) {
-    this.renderActionableDipole(ctx, currentComponent);
-  }
-
-  /**
-   * Render a switch object.
-   * @param {object} ctx The parsing context.
-   * @param {Component} currentComponent Current component.
-   */
-  renderSwitch(ctx, currentComponent) {
-    this.renderActionableDipole(ctx, currentComponent);
-  }
-
-  /**
    * Connects an input of a component to a line and mark it as an output of the line.
    * If the line has been rendered, the connection is added to the line.
    * If the line has not been rendered, the connection is added to the partially rendered line
@@ -580,26 +445,171 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
+   * Report the connections of the object to the lines it is connected to.
+   * @param {object} ctx The parsing context.
+   * @param {string} componentName The name of the component.
+   * @param {object} ports The ports of the component.
+   */
+  makeConnections(ctx, componentName, ports) {
+    ports.in.forEach((port) => {
+      // The port is connected to an interface or a line in another file or is not connected.
+      // Skip it.
+      if (port.source || port.linkedTo === null) { return; }
+
+      this.makeConnectionInput(ctx, port.linkedTo, componentName, port.name, port.domain);
+    });
+    ports.out.forEach((port) => {
+      // The port is connected to an interface or a line in another file or is not connected.
+      // Skip it.
+      if (port.source || port.linkedTo === null) { return; }
+
+      this.makeConnectionOutput(ctx, port.linkedTo, componentName, port.name, port.domain);
+    });
+  }
+
+  /**
+   * Render container object.
+   * @param {object} ctx The context of the parsing.
+   * @param {Component} currentComponent Current component.
+   */
+  renderGenericDipole(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInLine = null;
+    let portOutLine = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.name] = attribute.value;
+      }
+    });
+
+    const ports = {
+      in: [
+        { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+      ],
+      out: [
+        { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports,
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render an actionable dipole object.
+   * Used for circuit breaker, contactor, etc. That behaves the same way.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent  Current component.
+   */
+  renderActionableDipole(ctx, currentComponent) {
+    let parent = this.defaultParent;
+    let portInLine = null;
+    let portOutLine = null;
+    let portControlLine = null;
+    const attributes = {};
+    currentComponent?.attributes.forEach((attribute) => {
+      if (attribute.definition?.name === 'parentContainer') {
+        parent = attribute.value;
+      } else if (attribute.definition?.name === 'portIn') {
+        portInLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portOut') {
+        portOutLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else if (attribute.definition?.name === 'portControl') {
+        portControlLine = this.getLinkName(ctx, currentComponent, attribute.value);
+      } else {
+        attributes[attribute.name] = attribute.value;
+      }
+    });
+
+    const ports = {
+      in: [
+        { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+        { name: 'portControl', domain: 'control', linkedTo: portControlLine },
+      ],
+      out: [
+        { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
+
+    const contentDict = {
+      name: currentComponent.id,
+      attributes,
+      type: currentComponent.definition.type,
+      domain: 'electrical',
+      category: 'device',
+      parentId: parent,
+      description: currentComponent.definition.description,
+      ports,
+    };
+
+    ctx.rendered.devices.set(currentComponent.id, contentDict);
+  }
+
+  /**
+   * Render circuit breaker object.
+   * @param {object} ctx The context of the parsing.
+   * @param {Component} currentComponent Current component.
+   */
+  renderCircuitBreaker(ctx, currentComponent) {
+    this.renderActionableDipole(ctx, currentComponent);
+  }
+
+  /**
+   * Render contactor object.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component.
+   */
+  renderContactor(ctx, currentComponent) {
+    this.renderActionableDipole(ctx, currentComponent);
+  }
+
+  /**
+   * Render a switch object.
+   * @param {object} ctx The parsing context.
+   * @param {Component} currentComponent Current component.
+   */
+  renderSwitch(ctx, currentComponent) {
+    this.renderActionableDipole(ctx, currentComponent);
+  }
+
+  /**
    * Append contentDict to the objects field of the object with the name
    * @param {object} ctx The parsing context.
    * @param {Component} currentComponent Content to be appended
    */
   renderContainerObject(ctx, currentComponent) {
     let parentObjectName = null;
+    const attributes = {};
     currentComponent?.attributes.forEach((attribute) => {
       if (attribute.definition?.name === 'parent'
           || attribute.definition?.name === 'parentContainer'
           || attribute.definition?.name === 'floor') {
         parentObjectName = attribute.value;
+      } else {
+        attributes[attribute.name] = attribute.value;
       }
     });
-
-    const attributes = currentComponent?.attributes.reduce((acc, attribute) => {
-      if (attribute.definition === null) {
-        acc[attribute.name] = attribute.value;
-      }
-      return acc;
-    }, {});
 
     const contentDict = {
       name: currentComponent.id,
@@ -647,18 +657,13 @@ class ElectrificatorRenderer extends DefaultRender {
       return acc;
     }, {});
 
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
-    }
-    if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
-    }
-
     const ports = {
       in: [],
       out: [],
     };
 
+    // For now, only one side of the interface is rendered in the same file.
+    // We indicate where the interface is connected to on the other side by adding a source field.
     if (currentComponent.definition.type === 'electricalInputInterface') {
       attributes.role = 'input';
       ports.in.push({
@@ -672,6 +677,8 @@ class ElectrificatorRenderer extends DefaultRender {
       });
       ports.in.push({ name: 'portIn', domain: 'electrical', linkedTo: portInLine });
     }
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -756,13 +763,6 @@ class ElectrificatorRenderer extends DefaultRender {
       return acc;
     }, {});
 
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', domain);
-    }
-    if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', domain);
-    }
-
     const ports = {
       in: [],
       out: [],
@@ -781,6 +781,8 @@ class ElectrificatorRenderer extends DefaultRender {
       });
       ports.in.push({ name: 'portIn', domain, linkedTo: portInLine });
     }
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -851,9 +853,14 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
-    }
+    const ports = {
+      in: [
+        { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+      ],
+      out: [],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -863,12 +870,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-        ],
-        out: [],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -895,12 +897,16 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portControlOutLine !== null) {
-      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
-    }
-    if (portControlInLine !== null) {
-      this.makeConnectionInput(ctx, portControlInLine, currentComponent.id, 'portControlIn', 'control');
-    }
+    const ports = {
+      in: [
+        { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
+      ],
+      out: [
+        { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -910,14 +916,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
-        ],
-        out: [
-          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -941,9 +940,15 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portControlOutLine !== null) {
-      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
-    }
+    const ports = {
+      in: [],
+      out: [
+        { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
+
     const contentDict = {
       name: currentComponent.id,
       attributes,
@@ -952,12 +957,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [],
-        out: [
-          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -981,9 +981,14 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portInLine !== null) {
-      this.makeConnectionInput(ctx, portInLine, currentComponent.id, 'portIn', 'electrical');
-    }
+    const ports = {
+      in: [
+        { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
+      ],
+      out: [],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -993,12 +998,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portInLine },
-        ],
-        out: [],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1030,9 +1030,14 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portOutLine !== null) {
-      this.makeConnectionOutput(ctx, portOutLine, currentComponent.id, 'portOut', 'electrical');
-    }
+    const ports = {
+      in: [],
+      out: [
+        { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1042,12 +1047,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1067,9 +1067,14 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portControlOutLine !== null) {
-      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
-    }
+    const ports = {
+      in: [],
+      out: [
+        { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1079,12 +1084,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [],
-        out: [
-          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1107,12 +1107,16 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portControlOutLine !== null) {
-      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
-    }
-    if (portControlInLine !== null) {
-      this.makeConnectionInput(ctx, portControlInLine, currentComponent.id, 'portControlIn', 'control');
-    }
+    const ports = {
+      in: [
+        { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
+      ],
+      out: [
+        { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1122,14 +1126,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portControlIn', domain: 'control', linkedTo: portControlInLine },
-        ],
-        out: [
-          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1149,9 +1146,14 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portControlOutLine !== null) {
-      this.makeConnectionOutput(ctx, portControlOutLine, currentComponent.id, 'portControlOut', 'control');
-    }
+    const ports = {
+      in: [],
+      out: [
+        { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1161,12 +1163,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [],
-        out: [
-          { name: 'portControlOut', domain: 'control', linkedTo: portControlOutLine },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1192,15 +1189,17 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portInA !== null) {
-      this.makeConnectionInput(ctx, portInA, currentComponent.id, 'portInA', 'electrical');
-    }
-    if (portInB !== null) {
-      this.makeConnectionInput(ctx, portInB, currentComponent.id, 'portInB', 'electrical');
-    }
-    if (portOut !== null) {
-      this.makeConnectionOutput(ctx, portOut, currentComponent.id, 'portOut', 'electrical');
-    }
+    const ports = {
+      in: [
+        { name: 'portInA', domain: 'electrical', linkedTo: portInA },
+        { name: 'portInB', domain: 'electrical', linkedTo: portInB },
+      ],
+      out: [
+        { name: 'portOut', domain: 'electrical', linkedTo: portOut },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1210,15 +1209,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portInA', domain: 'electrical', linkedTo: portInA },
-          { name: 'portInB', domain: 'electrical', linkedTo: portInB },
-        ],
-        out: [
-          { name: 'portOut', domain: 'electrical', linkedTo: portOut },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
@@ -1247,18 +1238,18 @@ class ElectrificatorRenderer extends DefaultRender {
       }
     });
 
-    if (portIn !== null) {
-      this.makeConnectionInput(ctx, portIn, currentComponent.id, 'portIn', 'electrical');
-    }
-    if (portOutA !== null) {
-      this.makeConnectionOutput(ctx, portOutA, currentComponent.id, 'portOutA', 'electrical');
-    }
-    if (portOutB !== null) {
-      this.makeConnectionOutput(ctx, portOutB, currentComponent.id, 'portOutB', 'electrical');
-    }
-    if (portGround !== null) {
-      this.makeConnectionOutput(ctx, portGround, currentComponent.id, 'portGround', 'electrical');
-    }
+    const ports = {
+      in: [
+        { name: 'portIn', domain: 'electrical', linkedTo: portIn },
+      ],
+      out: [
+        { name: 'portOutA', domain: 'electrical', linkedTo: portOutA },
+        { name: 'portOutB', domain: 'electrical', linkedTo: portOutB },
+        { name: 'portGround', domain: 'electrical', linkedTo: portGround },
+      ],
+    };
+
+    this.makeConnections(ctx, currentComponent.id, ports);
 
     const contentDict = {
       name: currentComponent.id,
@@ -1268,16 +1259,7 @@ class ElectrificatorRenderer extends DefaultRender {
       category: 'device',
       parentId: parent,
       description: currentComponent.definition.description,
-      ports: {
-        in: [
-          { name: 'portIn', domain: 'electrical', linkedTo: portIn },
-        ],
-        out: [
-          { name: 'portOutA', domain: 'electrical', linkedTo: portOutA },
-          { name: 'portOutB', domain: 'electrical', linkedTo: portOutB },
-          { name: 'portGround', domain: 'electrical', linkedTo: portGround },
-        ],
-      },
+      ports,
     };
 
     ctx.rendered.devices.set(currentComponent.id, contentDict);
