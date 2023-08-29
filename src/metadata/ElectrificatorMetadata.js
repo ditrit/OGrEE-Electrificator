@@ -17,7 +17,11 @@ class ElectrificatorMetadata extends DefaultMetadata {
     return super.validate();
   }
 
-  parse() {
+  /**
+   * Parse the metadata to generate the components' definition.
+   * @param {string} parentEventId The parent event id.
+   */
+  parse(parentEventId) {
     /*
      * Implement this to provide all the definitions describing the components.
      *
@@ -28,8 +32,21 @@ class ElectrificatorMetadata extends DefaultMetadata {
      * Both of them can be also used to check components in parser and generate errors.
      */
 
-    // DemoMetadata
+    const id = this.pluginData.emitEvent({
+      parent: parentEventId,
+      type: 'MetadataParser',
+      action: 'createComponentDefinitions',
+      status: 'running',
+      files: ['components.json'],
+      data: {
+        global: false,
+      },
+    });
 
+    /**
+     * The list of components' definition.
+     * @type {ComponentDefinition[]}
+     */
     const components = [];
 
     Object.values(metadata.components).forEach((component) => {
@@ -44,9 +61,11 @@ class ElectrificatorMetadata extends DefaultMetadata {
       components: [
         ...components,
       ],
+      links: [],
     };
 
-    this.pluginData.initLinkDefinitions();
+    this.pluginData.initLinkDefinitions(parentEventId);
+    this.pluginData.emitEvent({ id, status: 'success' });
   }
 }
 
