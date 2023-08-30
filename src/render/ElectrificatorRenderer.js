@@ -1,31 +1,30 @@
-import { ElectrificatorAQLRenderer } from 'src/render/ElectrificatorAQLRenderer';
 import { DefaultRender, FileInput } from 'leto-modelizer-plugin-core';
+import { copyObject } from 'src/render/utils';
+import { ElectrificatorAQLRenderer } from 'src/render/ElectrificatorAQLRenderer';
 
 /**
- * Template of plugin renderer.
+ * The plugin renderer.
+ * It parses the Leto Modelizer components into our self-defined JSON format
+ * that will be written to files.
+ * It handles the switch from the "Draw" tab to the "Text" tab.
  */
 class ElectrificatorRenderer extends DefaultRender {
   // Terrator uses nunjucks to render the files.
   // It isn't currently used in this plugin.
   // TODO : Evaluate if it is possible and useful to use it.
 
+  /**
+   * The name of the container where all orphan components will be placed.
+   * @type {string}
+   */
   defaultParent = 'stray';
 
   /**
-   * Convert all provided components and links in files.
+   * Generate all files from components and links.
    * @param {string} [parentEventId] - Parent event id.
    * @returns {FileInput[]} Array of generated files from components and links.
    */
-  renderFiles(parentEventId = null) {
-    /*
-     * The purpose of this function is to generate all files.
-     *
-     * You have to map all the given components into a file content and return all files.
-     *
-     * Implement your own parse function here.
-     *
-     * Components can be find in `this.pluginData.components`.
-     */
+  renderFiles(parentEventId) {
     return this.generateFilesFromComponentsMap(
       this.pluginData.components.reduce(
         (map, component) => {
@@ -76,6 +75,7 @@ class ElectrificatorRenderer extends DefaultRender {
           containers: new Map(),
         },
         warnings: [],
+        info: [],
       };
 
       components.forEach((component) => {
@@ -84,13 +84,15 @@ class ElectrificatorRenderer extends DefaultRender {
 
       const renderedJSONFile = this.renderFileFromContext(ctx);
 
+      if (ctx.info.length > 0) {
+        console.log(`Info for file ${path}:`, ctx.info);
+      }
       if (ctx.warnings.length > 0) {
         console.log(`Warnings for file ${path}:`, ctx.warnings);
       }
 
       files.push(new FileInput({
         path,
-        // content: `${this.template.render({ components }).trim()}\n`,
         content: renderedJSONFile,
       }));
 
@@ -192,47 +194,12 @@ class ElectrificatorRenderer extends DefaultRender {
   }
 
   /**
-   * Used to convert Map to JSON. It adds a dataType field to the Map object to identify it.
-   * Useful to copy objects that have Map fields.
-   * @param {string} key The object key.
-   * @param {any} value The object value.
-   * @returns {any} The value.
-   */
-  replacer(key, value) {
-    if (value instanceof Map) {
-      return {
-        dataType: 'Map',
-        value: Array.from(value.entries()), // or with spread: value: [...value]
-      };
-    }
-    return value;
-  }
-
-  /**
-   * Used to convert JSON-Converted Map (with replacer) to a Map object.
-   * It checks if the dataType field is set to Map.
-   * Useful to copy objects that have Map fields.
-   * @param {string} key The key.
-   * @param {any} value The value.
-   * @returns {Map<string, object[]>|any} The revived value.
-   */
-  reviver(key, value) {
-    if (typeof value === 'object' && value !== null) {
-      if (value.dataType === 'Map') {
-        return new Map(value.value);
-      }
-    }
-    return value;
-  }
-
-  /**
    * Render an object in hierarchical form from the rendered objects.
    * @param {object} originalCtx The context of the parsing.
    * @returns {string} The rendered file.
    */
   renderFileFromContext(originalCtx) {
-    const ctx = JSON.parse(JSON.stringify(originalCtx, this.replacer), this.reviver);
-    // TODO: Maybe clone the object to avoid side effects ?
+    const ctx = copyObject(originalCtx);
     if (ctx.partiallyRendered.containers.size > 0) {
       ctx.partiallyRendered.containers.forEach((container) => {
         ctx.warnings.push(`Container ${container.name} is not fully rendered`);
@@ -254,7 +221,7 @@ class ElectrificatorRenderer extends DefaultRender {
       });
     }
 
-    ctx.rendered.containers.set(this.defaultParent, {
+    const defaultParent = {
       name: this.defaultParent,
       parentId: null,
       type: 'container',
@@ -264,12 +231,13 @@ class ElectrificatorRenderer extends DefaultRender {
       objects: [],
       links: [],
       interfaces: [],
-    });
+    };
 
     ctx.rendered.devices.forEach((device) => {
       if (device.parentId === null) {
-        device.parentId = this.defaultParent;
         ctx.warnings.push(`Device ${device.name} has no parent: set to ${this.defaultParent}`);
+        device.parentId = this.defaultParent;
+        defaultParent.objects.push(device);
         return;
       }
 
@@ -277,6 +245,7 @@ class ElectrificatorRenderer extends DefaultRender {
       if (parent === undefined) {
         ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to ${this.defaultParent}`);
         device.parentId = this.defaultParent;
+        defaultParent.objects.push(device);
         return;
       }
 
@@ -285,8 +254,9 @@ class ElectrificatorRenderer extends DefaultRender {
 
     ctx.rendered.interfaces.forEach((inter) => {
       if (inter.parentId === null) {
-        inter.parentId = this.defaultParent;
         ctx.warnings.push(`Interface ${inter.name} has no parent: set to ${this.defaultParent}`);
+        inter.parentId = this.defaultParent;
+        defaultParent.interfaces.push(inter);
         return;
       }
 
@@ -294,6 +264,7 @@ class ElectrificatorRenderer extends DefaultRender {
       if (parent === undefined) {
         ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to ${this.defaultParent}`);
         inter.parentId = this.defaultParent;
+        defaultParent.interfaces.push(inter);
         return;
       }
 
@@ -302,8 +273,9 @@ class ElectrificatorRenderer extends DefaultRender {
 
     ctx.rendered.links.forEach((link) => {
       if (link.parentId === null) {
-        link.parentId = this.defaultParent;
         ctx.warnings.push(`Link ${link.name} has no parent: set to ${this.defaultParent}`);
+        link.parentId = this.defaultParent;
+        defaultParent.links.push(link);
         return;
       }
 
@@ -311,11 +283,20 @@ class ElectrificatorRenderer extends DefaultRender {
       if (parent === undefined) {
         ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to ${this.defaultParent}`);
         link.parentId = this.defaultParent;
+        defaultParent.links.push(link);
         return;
       }
 
       parent.links.push(link);
     });
+
+    // Add the default parent if needed
+    if (defaultParent.objects.length > 0
+        || defaultParent.interfaces.length > 0
+        || defaultParent.links.length > 0) {
+      ctx.info.push(`Default parent "${this.defaultParent}" added`);
+      ctx.rendered.containers.set(this.defaultParent, defaultParent);
+    }
 
     const containerMap = new Map();
     ctx.rendered.containers.forEach((container) => {

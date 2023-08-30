@@ -1,6 +1,18 @@
 import { FileInput } from 'leto-modelizer-plugin-core';
+import { copyObject } from 'src/render/utils';
 
+/**
+ * A custom renderer that generates AQL files from the parsed objects.
+ * It does NOT extend the default renderer to allow reusing the work we did in
+ * the ElectrificatorRenderer.
+ */
 class ElectrificatorAQLRenderer {
+  /**
+   * The rendered objects in a flat form.
+   * @type {{parentEdges: {documents: [], collection: string},
+   * connectionEdges: {documents: [], collection: string},
+   * objects: {documents: [], collection: string}}}
+   */
   rendered = {
     objects: {
       collection: 'objects',
@@ -16,11 +28,20 @@ class ElectrificatorAQLRenderer {
     },
   };
 
+  /**
+   * Construcs the AQL renderer.
+   * @param {DefaultData} pluginData The plugin data.
+   * @param {string} path The path of the original rendered file
+   * (ends with json or with no extension).
+   * @param {string} defaultParent The default parent name.
+   */
   constructor(pluginData, path, defaultParent = 'stray') {
     this.pluginData = pluginData;
     this.defaultParent = defaultParent;
     this.path = path.replace('.json', '');
 
+    // We use variables to allow the user to change the collection names.
+    // The names matter as they are used to define edges.
     this.pluginData.variables.forEach((variable) => {
       if (variable.name === 'objectsCollection') {
         this.rendered.objects.collection = variable.value;
@@ -32,40 +53,6 @@ class ElectrificatorAQLRenderer {
         throw new Error(`Unknown variable ${variable.name}`);
       }
     });
-  }
-
-  /**
-   * Used to convert Map to JSON. It adds a dataType field to the Map object to identify it.
-   * Useful to copy objects that have Map fields.
-   * @param {string} key The object key.
-   * @param {any} value The object value.
-   * @returns {any} The value.
-   */
-  replacer(key, value) {
-    if (value instanceof Map) {
-      return {
-        dataType: 'Map',
-        value: Array.from(value.entries()), // or with spread: value: [...value]
-      };
-    }
-    return value;
-  }
-
-  /**
-   * Used to convert JSON-Converted Map (with replacer) to a Map object. It checks
-   * if the dataType field is set to Map.
-   * Useful to copy objects that have Map fields.
-   * @param {string} key The key.
-   * @param {any} value The value.
-   * @returns {Map<string, object[]>|any} The revived value.
-   */
-  reviver(key, value) {
-    if (typeof value === 'object' && value !== null) {
-      if (value.dataType === 'Map') {
-        return new Map(value.value);
-      }
-    }
-    return value;
   }
 
   /**
@@ -115,26 +102,20 @@ class ElectrificatorAQLRenderer {
    * @param {object} originalContext The context of the parsing.
    */
   renderAQLFromContext(originalContext) {
-    const ctx = JSON.parse(JSON.stringify(originalContext, this.replacer), this.reviver);
-
-    ctx.rendered.containers.set(this.defaultParent, {
-      name: this.defaultParent,
-      parentId: null,
-      type: 'container',
-      attributes: {},
-      domain: 'general',
-      description: [],
-    });
+    const ctx = copyObject(originalContext);
+    let needDefaultParent = false;
 
     ctx.rendered.devices.forEach((device) => {
       if (device.parentId === null) {
         device.parentId = this.defaultParent;
+        needDefaultParent = true;
         ctx.warnings.push(`Device ${device.name} has no parent: set to ${this.defaultParent}`);
       }
 
       const parent = ctx.rendered.containers.get(device.parentId);
       if (parent === undefined) {
         ctx.warnings.push(`Device ${device.name} parent is invalid ${device.parentId}: set to ${this.defaultParent}`);
+        needDefaultParent = true;
         device.parentId = this.defaultParent;
       } else {
         this.rendered.parentEdges.documents.push(this.renderAQLEdge(
@@ -152,30 +133,17 @@ class ElectrificatorAQLRenderer {
       this.rendered.objects.documents.push(this.renderAQLDocument(device));
     });
 
-    ctx.rendered.containers.forEach((container) => {
-      const parent = ctx.rendered.containers.get(container.parentId);
-      if (parent === undefined) {
-        ctx.warnings.push(`Container ${container.name} parent is invalid ${container.parentId}: set to ${null}`);
-        container.parentId = null;
-      } else {
-        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
-          container.name,
-          container.parentId,
-        ));
-      }
-
-      this.rendered.objects.documents.push(this.renderAQLDocument(container));
-    });
-
     ctx.rendered.interfaces.forEach((inter) => {
       if (inter.parentId === null) {
         inter.parentId = this.defaultParent;
         ctx.warnings.push(`Interface ${inter.name} has no parent: set to ${this.defaultParent}`);
+        needDefaultParent = true;
       }
 
       const parent = ctx.rendered.containers.get(inter.parentId);
       if (parent === undefined) {
         ctx.warnings.push(`Interface ${inter.name} parent is invalid ${inter.parentId}: set to ${this.defaultParent}`);
+        needDefaultParent = true;
         inter.parentId = this.defaultParent;
       } else {
         this.rendered.parentEdges.documents.push(this.renderAQLEdge(
@@ -197,11 +165,13 @@ class ElectrificatorAQLRenderer {
       if (link.parentId === null) {
         link.parentId = this.defaultParent;
         ctx.warnings.push(`Link ${link.name} has no parent: set to ${this.defaultParent}`);
+        needDefaultParent = true;
       }
 
       const parent = ctx.rendered.containers.get(link.parentId);
       if (parent === undefined) {
         ctx.warnings.push(`Link ${link.name} parent is invalid (${link.parentId}): set to ${this.defaultParent}`);
+        needDefaultParent = true;
         link.parentId = this.defaultParent;
       } else {
         this.rendered.parentEdges.documents.push(this.renderAQLEdge(
@@ -218,10 +188,37 @@ class ElectrificatorAQLRenderer {
         this.rendered.connectionEdges.documents.push(this.renderAQLEdge(link.name, port.name));
       });
     });
+
+    // Add the default parent if needed
+    if (needDefaultParent) {
+      ctx.rendered.containers.set(this.defaultParent, {
+        name: this.defaultParent,
+        parentId: null,
+        type: 'container',
+        attributes: {},
+        domain: 'general',
+        description: [],
+      });
+    }
+
+    ctx.rendered.containers.forEach((container) => {
+      const parent = ctx.rendered.containers.get(container.parentId);
+      if (parent === undefined) {
+        ctx.warnings.push(`Container ${container.name} parent is invalid ${container.parentId}: set to null`);
+        container.parentId = null;
+      } else {
+        this.rendered.parentEdges.documents.push(this.renderAQLEdge(
+          container.name,
+          container.parentId,
+        ));
+      }
+
+      this.rendered.objects.documents.push(this.renderAQLDocument(container));
+    });
   }
 
   /**
-   * Generate JSON files importable using arangoimport from the rendered objects.
+   * Generate JSONL files importable using arangoimport from the rendered objects.
    * @param {object} originalContext The context of the parsing.
    * @returns {FileInput[]} The generated files.
    */
